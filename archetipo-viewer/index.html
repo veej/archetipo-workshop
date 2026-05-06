@@ -1,0 +1,1222 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ARchetipo Viewer</title>
+  <style>
+    :root {
+      --ink: #172b4d;
+      --muted: #5e6c84;
+      --paper: #f4f5f7;
+      --paper-2: #ffffff;
+      --line: #dfe1e6;
+      --line-strong: #c1c7d0;
+      --blue: #0c66e4;
+      --blue-soft: #e9f2ff;
+      --green: #216e4e;
+      --green-soft: #dffcf0;
+      --amber: #946f00;
+      --amber-soft: #fff0b3;
+      --purple: #5e4db2;
+      --purple-soft: #f3f0ff;
+      --red: #ae2a19;
+      --red-soft: #ffebe6;
+      --shadow: 0 8px 24px rgba(9, 30, 66, .12);
+      --radius: 8px;
+      --font-body: "Aptos", "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: var(--font-body);
+      min-height: 100vh;
+    }
+
+    button, input, select { font: inherit; }
+
+    .shell {
+      width: 100%;
+      min-height: 100vh;
+      margin: 0;
+      padding: 18px 20px 24px;
+    }
+
+    .workspace {
+      width: min(1800px, 100%);
+      margin: 0 auto;
+      min-width: 0;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(280px, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .brand {
+      padding: 12px 14px;
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 1px 0 rgba(9, 30, 66, .08);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 36px);
+      line-height: 1.05;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 0;
+    }
+
+    .btn, .icon-btn {
+      min-height: 42px;
+      border: 1px solid rgba(31, 37, 33, .18);
+      border-radius: 6px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      background: var(--paper-2);
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 700;
+      transition: background .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+
+    .btn:hover, .icon-btn:hover { background: #f7f8f9; box-shadow: 0 2px 8px rgba(9, 30, 66, .14); }
+    .btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; font-weight: 800; }
+    .btn.primary:hover { background: #0052cc; }
+    .btn.dark { background: #172b4d; color: #fff; border-color: #172b4d; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+    .icon { width: 18px; height: 18px; flex: 0 0 auto; }
+
+    .statusbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      margin: 0 0 12px;
+      padding: 12px 14px;
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--muted);
+      min-height: 50px;
+      box-shadow: 0 1px 0 rgba(9, 30, 66, .08);
+    }
+
+    .statusbar strong { color: var(--ink); }
+
+    .stats {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #f7f8f9;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) 190px 190px;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 10px;
+      min-height: 46px;
+      box-shadow: 0 1px 0 rgba(9, 30, 66, .06);
+    }
+
+    .field input, .field select {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(270px, 1fr));
+      gap: 12px;
+      align-items: start;
+      overflow-x: auto;
+      padding-bottom: 10px;
+    }
+
+    .column {
+      min-width: 290px;
+      background: #ebecf0;
+      border: 1px solid #ebecf0;
+      border-radius: var(--radius);
+      box-shadow: none;
+    }
+
+    .column.drag-over {
+      outline: 3px solid rgba(12, 102, 228, .35);
+      outline-offset: 2px;
+    }
+
+    .column-head {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 12px 8px;
+      background: #ebecf0;
+      border-bottom: 0;
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+
+    .column-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .stripe {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--muted);
+    }
+
+    .column h2 {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .column-count {
+      min-width: 26px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      background: #dfe1e6;
+      border-radius: 999px;
+      font-weight: 900;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .cards {
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 0 8px 8px;
+    }
+
+    .card {
+      position: relative;
+      border: 1px solid rgba(9, 30, 66, .08);
+      background: var(--paper-2);
+      border-radius: var(--radius);
+      box-shadow: 0 1px 2px rgba(9, 30, 66, .2);
+      padding: 12px;
+      cursor: grab;
+      transition: box-shadow .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 6px 16px rgba(9, 30, 66, .18);
+      border-color: rgba(12, 102, 228, .38);
+    }
+
+    .card:active { cursor: grabbing; }
+    .card.hidden { display: none; }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .code {
+      display: inline-flex;
+      background: transparent;
+      color: var(--blue);
+      border-radius: 0;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .priority {
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      border: 1px solid transparent;
+    }
+
+    .priority.high { background: var(--red-soft); color: var(--red); border-color: rgba(155, 61, 51, .18); }
+    .priority.medium { background: var(--amber-soft); color: var(--amber); border-color: rgba(167, 96, 32, .18); }
+    .priority.low { background: var(--blue-soft); color: var(--blue); border-color: rgba(37, 91, 125, .18); }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 15px;
+      line-height: 1.28;
+      font-weight: 750;
+      letter-spacing: 0;
+    }
+
+    .meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .meta span::before {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--line-strong);
+      content: "";
+    }
+
+    .story {
+      color: #3f4943;
+      font-size: 13px;
+      line-height: 1.4;
+      margin: 0 0 12px;
+    }
+
+    .tasks {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+
+    .task-summary {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .task-list {
+      display: grid;
+      gap: 7px;
+      max-height: 158px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .task {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 7px;
+      align-items: start;
+      font-size: 12px;
+      line-height: 1.3;
+      color: #3f4943;
+    }
+
+    .task-state {
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: var(--paper);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      border: 1px solid var(--line);
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .issue-type {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .issue-type::before {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      background: var(--green);
+      content: "";
+      box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .45);
+    }
+
+    .avatar-stack {
+      display: flex;
+      align-items: center;
+    }
+
+    .avatar {
+      display: grid;
+      width: 22px;
+      height: 22px;
+      place-items: center;
+      border: 2px solid #fff;
+      border-radius: 999px;
+      background: #deebff;
+      color: var(--blue);
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .drawer {
+      position: fixed;
+      inset: auto 18px 18px auto;
+      width: min(620px, calc(100vw - 36px));
+      max-height: min(760px, calc(100vh - 36px));
+      overflow: auto;
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      box-shadow: 0 30px 90px rgba(9, 30, 66, .24);
+      border-radius: var(--radius);
+      padding: 18px;
+      z-index: 20;
+      transform: translateY(18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .drawer.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .drawer-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .drawer h2 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.08;
+    }
+
+    .detail-section {
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+      margin-top: 12px;
+    }
+
+    .detail-section h3 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .detail-section ul {
+      margin: 0;
+      padding-left: 18px;
+      color: #3f4943;
+      line-height: 1.42;
+    }
+
+    .epic-panel {
+      margin: 0 0 12px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #f7f8f9;
+    }
+
+    .epic-panel .code {
+      margin-bottom: 5px;
+    }
+
+    .epic-panel h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    .epic-panel p {
+      margin: 0 0 10px;
+      color: #3f4943;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .empty {
+      padding: 28px 16px;
+      color: var(--muted);
+      text-align: center;
+      border: 1px dashed var(--line);
+      background: rgba(255, 255, 255, .45);
+      border-radius: var(--radius);
+    }
+
+    .notice {
+      display: none;
+      margin-bottom: 12px;
+      padding: 14px;
+      border: 1px solid rgba(155, 61, 51, .24);
+      background: var(--red-soft);
+      color: var(--red);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .notice.show { display: block; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%) translateY(20px);
+      background: #172b4d;
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 999px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+      z-index: 40;
+      box-shadow: 0 16px 45px rgba(31, 37, 33, .25);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 980px) {
+      .shell { padding: 14px; }
+      .topbar, .statusbar, .filters { grid-template-columns: 1fr; }
+      .toolbar { justify-content: stretch; }
+      .toolbar .btn { flex: 1 1 180px; }
+      .board { grid-template-columns: repeat(5, 82vw); }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="workspace">
+      <section class="topbar">
+        <div class="brand">
+          <h1>ARchetipo Viewer</h1>
+        </div>
+        <div class="toolbar" aria-label="Azioni principali">
+          <button class="btn primary" id="openProject" type="button" title="Seleziona la cartella root del progetto">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h5l2 2h11v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M3 7V5a2 2 0 0 1 2-2h3l2 2h4"/></svg>
+            Apri progetto
+          </button>
+          <button class="btn" id="reload" type="button" disabled title="Rilegge backlog e planning">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M16 8h5V3"/></svg>
+            Ricarica
+          </button>
+          <button class="btn dark" id="save" type="button" disabled title="Salva su docs/BACKLOG.md">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M17 21v-7H7v7"/><path d="M7 3v5h8"/></svg>
+            Salva
+          </button>
+        </div>
+      </section>
+
+      <div class="notice" id="notice"></div>
+
+      <section class="statusbar">
+        <div id="statusText">Apertura della root di progetto predefinita...</div>
+        <div class="stats" id="stats"></div>
+      </section>
+
+      <section class="filters" aria-label="Filtri">
+        <label class="field">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+          <input id="search" type="search" placeholder="Cerca storia, epic, testo o task">
+        </label>
+        <label class="field">
+          <select id="epicFilter" aria-label="Filtro epic"><option value="">Tutti gli epic</option></select>
+        </label>
+        <label class="field">
+          <select id="priorityFilter" aria-label="Filtro priorita"><option value="">Tutte le priorita</option></select>
+        </label>
+      </section>
+
+      <section class="board" id="board" aria-label="Kanban backlog"></section>
+    </section>
+  </main>
+
+  <aside class="drawer" id="drawer" aria-live="polite"></aside>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const STATUSES = [
+      { key: "TODO", label: "To do", color: "#626f86" },
+      { key: "PLANNED", label: "Planned", color: "#0c66e4" },
+      { key: "IN PROGRESS", label: "In progress", color: "#946f00" },
+      { key: "REVIEW", label: "Review", color: "#5e4db2" },
+      { key: "DONE", label: "Done", color: "#216e4e" }
+    ];
+
+    const state = {
+      rootHandle: null,
+      backlogHandle: null,
+      planningHandle: null,
+      backlogText: "",
+      stories: [],
+      dirty: false,
+      selected: null
+    };
+
+    const PROJECT_HANDLE_STORE = {
+      db: "archetipo-viewer",
+      store: "handles",
+      key: getProjectHandleKey()
+    };
+
+    const el = {
+      openProject: document.getElementById("openProject"),
+      reload: document.getElementById("reload"),
+      save: document.getElementById("save"),
+      notice: document.getElementById("notice"),
+      statusText: document.getElementById("statusText"),
+      stats: document.getElementById("stats"),
+      board: document.getElementById("board"),
+      search: document.getElementById("search"),
+      epicFilter: document.getElementById("epicFilter"),
+      priorityFilter: document.getElementById("priorityFilter"),
+      drawer: document.getElementById("drawer"),
+      toast: document.getElementById("toast")
+    };
+
+    function setNotice(message) {
+      el.notice.textContent = message || "";
+      el.notice.classList.toggle("show", Boolean(message));
+    }
+
+    function getSuggestedProjectRootPath() {
+      if (window.location.protocol !== "file:") return "";
+      const rawPath = decodeURIComponent(window.location.pathname)
+        .replace(/^\/([A-Za-z]:\/)/, "$1")
+        .replace(/\//g, "\\");
+      const match = rawPath.match(/^(.*)\\(?:archetipo-viewer|backlog-viewer)\\index\.html$/i);
+      return match ? match[1] : "";
+    }
+
+    function getProjectHandleKey() {
+      const viewerPath = decodeURIComponent(window.location.pathname || "")
+        .replace(/^\/([A-Za-z]:\/)/, "$1")
+        .replace(/\//g, "\\")
+        .toLowerCase();
+      return `project-root:${viewerPath || "default"}`;
+    }
+
+    function toast(message) {
+      el.toast.textContent = message;
+      el.toast.classList.add("show");
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => el.toast.classList.remove("show"), 2200);
+    }
+
+    function setDirty(value) {
+      state.dirty = value;
+      el.save.disabled = !state.backlogHandle || !value;
+      const suffix = value ? " Modifiche non salvate." : "";
+      el.statusText.innerHTML = state.stories.length
+        ? `<strong>${state.stories.length}</strong> storie caricate da docs/BACKLOG.md.${suffix}`
+        : `Apri la root del progetto per iniziare.${suffix}`;
+    }
+
+    async function getChildHandle(parent, name, kind) {
+      try {
+        return kind === "directory"
+          ? await parent.getDirectoryHandle(name)
+          : await parent.getFileHandle(name);
+      } catch {
+        return null;
+      }
+    }
+
+    async function chooseProject() {
+      setNotice("");
+      if (!("showDirectoryPicker" in window)) {
+        const suggestedPath = getSuggestedProjectRootPath();
+        setNotice(`Questo browser non espone la File System Access API. Apri questa pagina con Chrome o Edge${suggestedPath ? ` e seleziona ${suggestedPath}` : ", poi seleziona la cartella del progetto"}.`);
+        return;
+      }
+      try {
+        state.rootHandle = await window.showDirectoryPicker({
+          id: "archetipo-project-root",
+          mode: "readwrite"
+        });
+        await saveProjectRootHandle(state.rootHandle);
+        await loadProject();
+      } catch (error) {
+        if (error.name !== "AbortError") setNotice(`Impossibile aprire la cartella: ${error.message}`);
+      }
+    }
+
+    async function chooseDefaultProjectRoot() {
+      if (!("showDirectoryPicker" in window)) {
+        setDirty(false);
+        return;
+      }
+      const storedHandle = await loadProjectRootHandle();
+      if (storedHandle && await ensureReadWritePermission(storedHandle)) {
+        state.rootHandle = storedHandle;
+        await loadProject();
+        return;
+      }
+      const suggestedPath = getSuggestedProjectRootPath();
+      el.statusText.textContent = "Apri la root del progetto per iniziare.";
+      setNotice(suggestedPath
+        ? `Alla prima apertura il browser richiede conferma. Premi Apri progetto e seleziona questa cartella: ${suggestedPath}`
+        : "Alla prima apertura il browser richiede conferma. Premi Apri progetto e seleziona la cartella root che contiene docs/BACKLOG.md.");
+    }
+
+    async function ensureReadWritePermission(handle) {
+      const options = { mode: "readwrite" };
+      try {
+        if (await handle.queryPermission(options) === "granted") return true;
+        return await handle.requestPermission(options) === "granted";
+      } catch {
+        return false;
+      }
+    }
+
+    async function openHandleDb() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(PROJECT_HANDLE_STORE.db, 1);
+        request.onupgradeneeded = () => request.result.createObjectStore(PROJECT_HANDLE_STORE.store);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function saveProjectRootHandle(handle) {
+      try {
+        const db = await openHandleDb();
+        const tx = db.transaction(PROJECT_HANDLE_STORE.store, "readwrite");
+        tx.objectStore(PROJECT_HANDLE_STORE.store).put(handle, PROJECT_HANDLE_STORE.key);
+      } catch {
+        // Persisted handles are an enhancement; manual selection still works without them.
+      }
+    }
+
+    async function loadProjectRootHandle() {
+      try {
+        const db = await openHandleDb();
+        return await new Promise((resolve, reject) => {
+          const tx = db.transaction(PROJECT_HANDLE_STORE.store, "readonly");
+          const request = tx.objectStore(PROJECT_HANDLE_STORE.store).get(PROJECT_HANDLE_STORE.key);
+          request.onsuccess = () => resolve(request.result || null);
+          request.onerror = () => reject(request.error);
+        });
+      } catch {
+        return null;
+      }
+    }
+
+    async function loadProject() {
+      setNotice("");
+      el.reload.disabled = true;
+      const docs = await getChildHandle(state.rootHandle, "docs", "directory");
+      if (!docs) {
+        resetData("Non trovo la cartella docs nella root selezionata.");
+        return;
+      }
+
+      state.backlogHandle = await getChildHandle(docs, "BACKLOG.md", "file");
+      if (!state.backlogHandle) {
+        resetData("Non trovo docs/BACKLOG.md nella cartella selezionata. La kanban resta vuota finche il backlog non esiste.");
+        return;
+      }
+
+      state.planningHandle = await getChildHandle(docs, "planning", "directory");
+      const file = await state.backlogHandle.getFile();
+      state.backlogText = await file.text();
+      state.stories = parseBacklog(state.backlogText);
+      await attachPlanningTasks();
+      populateFilters();
+      render();
+      el.reload.disabled = false;
+      setDirty(false);
+    }
+
+    function resetData(message) {
+      state.backlogHandle = null;
+      state.planningHandle = null;
+      state.backlogText = "";
+      state.stories = [];
+      render();
+      setDirty(false);
+      el.reload.disabled = true;
+      setNotice(message);
+    }
+
+    function parseBacklog(markdown) {
+      const epics = parseEpics(markdown);
+      const storyHeading = /^####\s+(US-\d+):\s+(.+)$/gm;
+      const matches = [...markdown.matchAll(storyHeading)];
+      return matches.map((match, index) => {
+        const start = match.index;
+        const end = index + 1 < matches.length ? matches[index + 1].index : markdown.length;
+        const block = markdown.slice(start, end);
+        const meta = block.match(/\*\*Epic:\*\*\s*([^|]+)\|\s*\*\*Priority:\*\*\s*([^|]+)\|\s*\*\*Story Points:\*\*\s*([^\n]+)/);
+        const status = block.match(/\*\*Status:\*\*\s*([A-Z_ -]+)/);
+        const storyText = sectionText(block, "Story");
+        const demonstrates = sectionText(block, "Demonstrates");
+        const criteria = checkboxItems(block, "Acceptance Criteria");
+        const epicCode = meta ? meta[1].trim() : "";
+        const epic = epics.get(epicCode) || inferEpicForStory(epics, start) || {
+          code: epicCode || "Senza epic",
+          title: "",
+          description: "",
+          scope: "",
+          stories: "",
+          points: ""
+        };
+        return {
+          id: match[1],
+          title: match[2].trim(),
+          epic: epic.code,
+          epicTitle: epic.title,
+          epicDescription: epic.description,
+          epicScope: epic.scope,
+          epicStories: epic.stories,
+          epicPoints: epic.points,
+          priority: meta ? meta[2].trim().toUpperCase() : "MEDIUM",
+          points: meta ? meta[3].trim() : "?",
+          status: normalizeStatus(status ? status[1].trim() : "TODO"),
+          story: storyText,
+          demonstrates,
+          criteria,
+          blockStart: start,
+          blockEnd: end,
+          block,
+          tasks: []
+        };
+      });
+    }
+
+    function parseEpics(markdown) {
+      const epicHeading = /^###\s+(EP-\d+):\s+(.+)$/gm;
+      const matches = [...markdown.matchAll(epicHeading)];
+      const epics = new Map();
+      matches.forEach((match, index) => {
+        const start = match.index;
+        const end = index + 1 < matches.length ? matches[index + 1].index : markdown.length;
+        const block = markdown.slice(start, end);
+        const quoteLines = block.split(/\r?\n/)
+          .filter(line => line.trim().startsWith(">"))
+          .map(line => line.replace(/^\s*>\s?/, "").trim())
+          .filter(Boolean);
+        const scopeLine = quoteLines.find(line => /\*\*Scope:\*\*/i.test(line)) || "";
+        const description = quoteLines.filter(line => !/\*\*Scope:\*\*/i.test(line)).join(" ");
+        const summary = scopeLine.match(/\*\*Scope:\*\*\s*([^|]+)(?:\|\s*\*\*Stories:\*\*\s*([^|]+))?(?:\|\s*\*\*Story Points:\*\*\s*([^|]+))?/i);
+        epics.set(match[1], {
+          code: match[1],
+          title: match[2].trim(),
+          description,
+          scope: summary ? summary[1].trim() : "",
+          stories: summary && summary[2] ? summary[2].trim() : "",
+          points: summary && summary[3] ? summary[3].trim() : "",
+          start
+        });
+      });
+      return epics;
+    }
+
+    function inferEpicForStory(epics, storyStart) {
+      return [...epics.values()]
+        .filter(epic => epic.start < storyStart)
+        .sort((a, b) => b.start - a.start)[0] || null;
+    }
+
+    function sectionText(block, title) {
+      const re = new RegExp("\\*\\*" + title + "\\*\\*\\n([\\s\\S]*?)(?=\\n\\*\\*|\\n---|$)", "i");
+      const match = block.match(re);
+      return match ? match[1].trim().replace(/\n+/g, " ") : "";
+    }
+
+    function checkboxItems(block, title) {
+      const re = new RegExp("\\*\\*" + title + "\\*\\*\\n([\\s\\S]*?)(?=\\n\\*\\*|\\n---|$)", "i");
+      const match = block.match(re);
+      if (!match) return [];
+      return match[1].split("\n")
+        .map(line => line.match(/-\s+\[[ xX]\]\s+(.+)/))
+        .filter(Boolean)
+        .map(match => match[1].trim());
+    }
+
+    function normalizeStatus(value) {
+      const normalized = String(value || "").trim().toUpperCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ");
+      return STATUSES.some(status => status.key === normalized) ? normalized : "TODO";
+    }
+
+    async function attachPlanningTasks() {
+      if (!state.planningHandle) return;
+      await Promise.all(state.stories.map(async story => {
+        const handle = await getChildHandle(state.planningHandle, `${story.id}.md`, "file");
+        if (!handle) return;
+        const text = await (await handle.getFile()).text();
+        story.tasks = parseTasks(text);
+      }));
+    }
+
+    function parseTasks(markdown) {
+      const lines = markdown.split(/\r?\n/);
+      const tasks = [];
+      for (const line of lines) {
+        if (!line.trim().startsWith("|")) continue;
+        if (line.includes("---") || line.includes("| Stato |")) continue;
+        const cells = line.split("|").slice(1, -1).map(cell => cell.trim());
+        if (cells.length < 6) continue;
+        if (!/^TASK-\d+/i.test(cells[1])) continue;
+        tasks.push({
+          state: cells[0],
+          id: cells[1],
+          title: stripMd(cells[2]),
+          description: stripMd(cells[3]),
+          type: stripMd(cells[4]),
+          dependencies: stripMd(cells[5])
+        });
+      }
+      return tasks;
+    }
+
+    function stripMd(text) {
+      return text.replace(/`/g, "").replace(/\*\*/g, "").trim();
+    }
+
+    function populateFilters() {
+      fillSelect(el.epicFilter, "Tutti gli epic", [...new Set(state.stories.map(story => story.epic))].sort());
+      fillSelect(el.priorityFilter, "Tutte le priorita", [...new Set(state.stories.map(story => story.priority))].sort());
+    }
+
+    function fillSelect(select, label, values) {
+      const current = select.value;
+      select.innerHTML = `<option value="">${label}</option>` + values.map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("");
+      if (values.includes(current)) select.value = current;
+    }
+
+    function render() {
+      renderStats();
+      const filtered = filteredStories();
+      el.board.innerHTML = STATUSES.map(status => columnTemplate(status, filtered)).join("");
+      bindBoardEvents();
+      if (!state.stories.length && !el.notice.classList.contains("show")) {
+        el.board.innerHTML = `<div class="empty">Nessuna storia caricata.</div>`;
+      }
+    }
+
+    function renderStats() {
+      if (!state.stories.length) {
+        el.stats.innerHTML = "";
+        return;
+      }
+      const totalPoints = state.stories.reduce((sum, story) => sum + Number(story.points || 0), 0);
+      const withTasks = state.stories.filter(story => story.tasks.length).length;
+      el.stats.innerHTML = [
+        `${state.stories.length} storie`,
+        `${totalPoints} pt`,
+        `${withTasks} con planning`,
+        `${state.stories.filter(story => story.priority === "HIGH").length} HIGH`
+      ].map(text => `<span class="pill">${escapeHtml(text)}</span>`).join("");
+    }
+
+    function filteredStories() {
+      const query = el.search.value.trim().toLowerCase();
+      return state.stories.filter(story => {
+        const haystack = [
+          story.id,
+          story.title,
+          story.epic,
+          story.epicTitle,
+          story.epicDescription,
+          story.epicScope,
+          story.priority,
+          story.story,
+          story.demonstrates,
+          ...story.tasks.map(task => `${task.id} ${task.title} ${task.description}`)
+        ].join(" ").toLowerCase();
+        return (!query || haystack.includes(query))
+          && (!el.epicFilter.value || story.epic === el.epicFilter.value)
+          && (!el.priorityFilter.value || story.priority === el.priorityFilter.value);
+      });
+    }
+
+    function columnTemplate(status, stories) {
+      const columnStories = stories.filter(story => story.status === status.key);
+      return `
+        <section class="column" data-status="${status.key}">
+          <header class="column-head">
+            <div class="column-title">
+              <span class="stripe" style="background:${status.color}"></span>
+              <h2>${status.label}</h2>
+            </div>
+            <span class="column-count">${columnStories.length}</span>
+          </header>
+          <div class="cards">
+            ${columnStories.length ? columnStories.map(cardTemplate).join("") : `<div class="empty">Nessuna card</div>`}
+          </div>
+        </section>
+      `;
+    }
+
+    function cardTemplate(story) {
+      const priorityClass = story.priority.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+      const epicLabel = story.epicTitle ? `${story.epic} · ${story.epicTitle}` : story.epic;
+      const tasks = story.tasks.slice(0, 5).map(task => `
+        <div class="task"><span class="task-state">${escapeHtml(task.state)}</span><span>${escapeHtml(task.id)} · ${escapeHtml(task.title)}</span></div>
+      `).join("");
+      return `
+        <article class="card" draggable="true" data-id="${story.id}">
+          <div class="card-top">
+            <span class="code">${story.id}</span>
+            <span class="priority ${priorityClass}">${story.priority}</span>
+          </div>
+          <h3>${escapeHtml(story.title)}</h3>
+          <div class="meta">
+            <span>${escapeHtml(epicLabel)}</span>
+            <span>${escapeHtml(story.points)} pt</span>
+          </div>
+          <div class="tasks">
+            <div class="task-summary"><span>Task planning</span><span>${story.tasks.length}</span></div>
+            <div class="task-list">${tasks || `<span class="story">Nessun file docs/planning/${story.id}.md trovato.</span>`}</div>
+          </div>
+          <div class="card-footer">
+            <span class="issue-type">Story</span>
+            <span class="avatar-stack"><span class="avatar">${escapeHtml(story.epic.replace(/[^A-Z0-9]/gi, "").slice(-2) || "AR")}</span></span>
+          </div>
+        </article>
+      `;
+    }
+
+    function bindBoardEvents() {
+      document.querySelectorAll(".card").forEach(card => {
+        card.addEventListener("dragstart", event => {
+          event.dataTransfer.setData("text/plain", card.dataset.id);
+          event.dataTransfer.effectAllowed = "move";
+        });
+        card.addEventListener("click", event => {
+          openDrawer(card.dataset.id);
+        });
+      });
+
+      document.querySelectorAll(".column").forEach(column => {
+        column.addEventListener("dragover", event => {
+          event.preventDefault();
+          column.classList.add("drag-over");
+        });
+        column.addEventListener("dragleave", () => column.classList.remove("drag-over"));
+        column.addEventListener("drop", event => {
+          event.preventDefault();
+          column.classList.remove("drag-over");
+          const id = event.dataTransfer.getData("text/plain");
+          changeStatus(id, column.dataset.status);
+        });
+      });
+
+    }
+
+    function openDrawer(id) {
+      const story = state.stories.find(item => item.id === id);
+      if (!story) return;
+      state.selected = id;
+      const epicLabel = story.epicTitle ? `${story.epic} · ${story.epicTitle}` : story.epic;
+      el.drawer.innerHTML = `
+        <div class="drawer-head">
+          <div>
+            <span class="code">${story.id}</span>
+            <h2>${escapeHtml(story.title)}</h2>
+          </div>
+          <button class="icon-btn" type="button" id="closeDrawer" title="Chiudi">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+        <div class="meta">
+          <span>${escapeHtml(epicLabel)}</span>
+          <span>${story.priority}</span>
+          <span>${escapeHtml(story.points)} pt</span>
+          <span>${story.status}</span>
+        </div>
+        ${epicPanel(story)}
+        <p class="story">${escapeHtml(story.story)}</p>
+        ${story.demonstrates ? `<section class="detail-section"><h3>Demonstrates</h3><p class="story">${escapeHtml(story.demonstrates)}</p></section>` : ""}
+        ${detailList("Acceptance criteria", story.criteria)}
+        ${detailTasks(story)}
+      `;
+      el.drawer.classList.add("open");
+      document.getElementById("closeDrawer").addEventListener("click", () => el.drawer.classList.remove("open"));
+    }
+
+    function epicPanel(story) {
+      if (!story.epicTitle && !story.epicDescription && !story.epicScope) return "";
+      const stats = [
+        story.epicScope && `Scope ${story.epicScope}`,
+        story.epicStories && `${story.epicStories} storie`,
+        story.epicPoints && `${story.epicPoints} pt`
+      ].filter(Boolean);
+      return `
+        <section class="epic-panel">
+          <span class="code">${escapeHtml(story.epic)}</span>
+          ${story.epicTitle ? `<h3>${escapeHtml(story.epicTitle)}</h3>` : ""}
+          ${story.epicDescription ? `<p>${escapeHtml(story.epicDescription)}</p>` : ""}
+          ${stats.length ? `<div class="meta">${stats.map(item => `<span>${escapeHtml(item)}</span>`).join("")}</div>` : ""}
+        </section>
+      `;
+    }
+
+    function detailList(title, items) {
+      if (!items.length) return "";
+      return `<section class="detail-section"><h3>${title}</h3><ul>${items.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul></section>`;
+    }
+
+    function detailTasks(story) {
+      if (!story.tasks.length) return `<section class="detail-section"><h3>Task</h3><p class="story">Nessun planning trovato per ${story.id}.</p></section>`;
+      return `<section class="detail-section"><h3>Task</h3><ul>${story.tasks.map(task => `<li><strong>${escapeHtml(task.id)}</strong> [${escapeHtml(task.state)}] ${escapeHtml(task.title)}<br>${escapeHtml(task.description)}</li>`).join("")}</ul></section>`;
+    }
+
+    async function changeStatus(id, status) {
+      const story = state.stories.find(item => item.id === id);
+      if (!story || story.status === status) return;
+      const previousStatus = story.status;
+      const previousBacklogText = state.backlogText;
+      const previousDirty = state.dirty;
+      story.status = status;
+      state.backlogText = updateBacklogStatus(state.backlogText, id, status);
+      setDirty(true);
+      render();
+      if (state.selected === id) openDrawer(id);
+      try {
+        await saveBacklog({ silent: true });
+        toast(`${id} spostata in ${status} e salvata`);
+      } catch {
+        story.status = previousStatus;
+        state.backlogText = previousBacklogText;
+        render();
+        if (state.selected === id) openDrawer(id);
+        setDirty(previousDirty);
+      }
+    }
+
+    function updateBacklogStatus(markdown, id, status) {
+      const heading = new RegExp(`(^####\\s+${id}:.*$)`, "m");
+      const headingMatch = markdown.match(heading);
+      if (!headingMatch) return markdown;
+      const start = headingMatch.index;
+      const nextMatch = markdown.slice(start + headingMatch[0].length).match(/\n####\s+US-\d+:/);
+      const end = nextMatch ? start + headingMatch[0].length + nextMatch.index : markdown.length;
+      const block = markdown.slice(start, end);
+      let nextBlock;
+      if (/\*\*Status:\*\*\s*[A-Z_ -]+/.test(block)) {
+        nextBlock = block.replace(/\*\*Status:\*\*\s*[A-Z_ -]+/, `**Status:** ${status}`);
+      } else {
+        nextBlock = block.replace(/(\*\*Epic:\*\*.*\n)/, `$1**Status:** ${status}\n`);
+      }
+      return markdown.slice(0, start) + nextBlock + markdown.slice(end);
+    }
+
+    async function saveBacklog(options = {}) {
+      if (!state.backlogHandle || !state.dirty) return;
+      try {
+        const writable = await state.backlogHandle.createWritable();
+        await writable.write(state.backlogText);
+        await writable.close();
+        setDirty(false);
+        if (!options.silent) toast("BACKLOG.md salvato");
+      } catch (error) {
+        setNotice(`Salvataggio non riuscito: ${error.message}`);
+        throw error;
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    el.openProject.addEventListener("click", chooseProject);
+    el.reload.addEventListener("click", loadProject);
+    el.save.addEventListener("click", saveBacklog);
+    [el.search, el.epicFilter, el.priorityFilter].forEach(input => input.addEventListener("input", render));
+    window.addEventListener("beforeunload", event => {
+      if (!state.dirty) return;
+      event.preventDefault();
+      event.returnValue = "";
+    });
+
+    render();
+    chooseDefaultProjectRoot();
+  </script>
+</body>
+</html>

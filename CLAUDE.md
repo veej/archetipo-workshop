@@ -1,0 +1,1 @@
+Always follow the content of @AGENTS.md

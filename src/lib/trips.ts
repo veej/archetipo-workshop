@@ -1,6 +1,36 @@
 import { prisma } from "@/lib/prisma";
 import type { DocumentCategory, TripRole } from "@prisma/client";
 
+export type TripInfo = {
+  trip: {
+    id: string;
+    name: string;
+    destination: string;
+    startDate: Date;
+    endDate: Date;
+    coverKey: string | null;
+  };
+  role: TripRole;
+};
+
+export async function getTripInfo(
+  tripId: string,
+  userId: string
+): Promise<TripInfo | null> {
+  const participation = await prisma.tripParticipant.findUnique({
+    where: { tripId_userId: { tripId, userId } },
+    include: {
+      trip: {
+        select: { id: true, name: true, destination: true, startDate: true, endDate: true, coverKey: true },
+      },
+    },
+  });
+
+  if (!participation || participation.status !== "ACTIVE") return null;
+
+  return { trip: participation.trip, role: participation.role };
+}
+
 export type TodayStop = {
   id: string;
   name: string;

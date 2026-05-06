@@ -1,6 +1,7 @@
 import { redirect, forbidden } from "next/navigation";
 import { getCurrentUser } from "@/lib/user";
 import { getTripDashboard } from "@/lib/trips";
+import { TripShell } from "@/components/trips/trip-shell";
 import { TripDashboard } from "@/components/trips/trip-dashboard";
 
 interface Props {
@@ -16,5 +17,9 @@ export default async function TripDashboardPage({ params }: Props) {
   const data = await getTripDashboard(id, user.id);
   if (!data) forbidden();
 
-  return <TripDashboard tripId={id} data={data} />;
+  return (
+    <TripShell tripId={id} trip={data.trip} role={data.role} activeTab="overview">
+      <TripDashboard tripId={id} data={data} />
+    </TripShell>
+  );
 }

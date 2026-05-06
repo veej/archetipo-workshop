@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>US-001 — Combriccola: Creazione Viaggio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    /* ───────── Design Tokens (from Combriccola shared design system) ───────── */
+    :root {
+      --th-primary: #E55A4E;
+      --th-primary-hover: #C94A40;
+      --th-primary-soft: #FCE9E6;
+      --th-primary-fg: #FFFFFF;
+
+      --th-bg: #FAFAF7;
+      --th-surface: #FFFFFF;
+      --th-surface-2: #F6F4F0;
+      --th-fg: #1B1A19;
+      --th-fg-muted: #6E6A66;
+      --th-fg-subtle: #A09C97;
+      --th-border: #E8E4DE;
+      --th-border-strong: #D8D2C8;
+      --th-ring: rgba(229, 90, 78, 0.35);
+
+      --th-success: #2F8A5F;
+      --th-success-soft: #E5F2EC;
+      --th-warning: #B8761E;
+      --th-warning-soft: #FBF1DD;
+      --th-danger: #C44A40;
+      --th-danger-soft: #FCE9E6;
+      --th-info: #2A6FDB;
+      --th-info-soft: #E4EDFB;
+
+      --th-radius-sm: 6px;
+      --th-radius:    10px;
+      --th-radius-md: 12px;
+      --th-radius-lg: 16px;
+      --th-radius-xl: 20px;
+
+      --th-shadow-xs: 0 1px 2px rgba(20, 16, 12, 0.04);
+      --th-shadow-sm: 0 1px 3px rgba(20, 16, 12, 0.06), 0 1px 2px rgba(20, 16, 12, 0.04);
+      --th-shadow-md: 0 4px 14px rgba(20, 16, 12, 0.08), 0 2px 4px rgba(20, 16, 12, 0.04);
+      --th-shadow-lg: 0 12px 32px rgba(20, 16, 12, 0.10), 0 4px 12px rgba(20, 16, 12, 0.05);
+
+      --th-font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --th-font-display: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    }
+
+    /* ───────── Base ───────── */
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--th-bg); color: var(--th-fg); font-family: var(--th-font-sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    button { font-family: inherit; cursor: pointer; }
+    input, textarea, select { font-family: inherit; font-size: inherit; }
+    a { color: inherit; text-decoration: none; }
+    h1, h2, h3, h4 { font-family: var(--th-font-display); font-weight: 700; letter-spacing: -0.02em; margin: 0; color: var(--th-fg); }
+    p { margin: 0; }
+
+    /* ───────── Scenario switcher ───────── */
+    .scenario-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      background: var(--th-fg);
+      padding: 10px 20px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .scenario-bar .label {
+      color: rgba(255,255,255,0.6); font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap;
+    }
+    .scenario-btn {
+      padding: 5px 14px;
+      font-size: 12.5px; font-weight: 600;
+      border-radius: 6px;
+      border: 1.5px solid rgba(255,255,255,0.15);
+      background: transparent;
+      color: rgba(255,255,255,0.65);
+      cursor: pointer;
+      transition: all .12s;
+      white-space: nowrap;
+    }
+    .scenario-btn:hover { border-color: rgba(255,255,255,0.4); color: white; }
+    .scenario-btn.active { background: var(--th-primary); border-color: var(--th-primary); color: white; }
+    .scenario-desc {
+      margin-left: auto;
+      color: rgba(255,255,255,0.4); font-size: 11.5px;
+    }
+
+    /* ───────── App body offset (for scenario bar) ───────── */
+    body { padding-top: 44px; }
+
+    /* ───────── Header ───────── */
+    .th-header {
+      position: sticky; top: 44px; z-index: 40;
+      background: rgba(250, 250, 247, 0.92);
+      backdrop-filter: blur(12px) saturate(150%);
+      border-bottom: 1px solid var(--th-border);
+    }
+    .th-header-row {
+      max-width: 1240px; margin: 0 auto;
+      padding: 14px 32px;
+      display: flex; align-items: center; gap: 24px;
+    }
+    .th-header-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--th-font-display);
+      font-weight: 700; font-size: 17px; letter-spacing: -0.02em;
+    }
+    .th-brand-mark {
+      width: 30px; height: 30px; border-radius: 9px;
+      background: var(--th-primary); color: white;
+      display: grid; place-items: center;
+      font-weight: 800; font-size: 14px;
+      box-shadow: 0 6px 14px -4px rgba(229, 90, 78, 0.55);
+    }
+    .th-header-nav { display: flex; align-items: center; gap: 4px; margin-left: 8px; }
+    .th-header-nav-item {
+      padding: 7px 12px; font-size: 13px; font-weight: 600;
+      color: var(--th-fg-muted); border-radius: var(--th-radius-sm);
+      border: none; background: transparent; cursor: pointer;
+      transition: background .12s, color .12s; white-space: nowrap;
+    }
+    .th-header-nav-item:hover { background: var(--th-surface-2); color: var(--th-fg); }
+    .th-header-nav-item.active { color: var(--th-fg); background: var(--th-surface-2); }
+    .th-header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .th-search {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--th-surface); border: 1px solid var(--th-border);
+      border-radius: var(--th-radius-sm); padding: 7px 11px;
+      width: 240px; color: var(--th-fg-muted);
+    }
+    .th-search input { border: none; outline: none; background: transparent; flex: 1; color: var(--th-fg); font-size: 13px; }
+    .th-search input::placeholder { color: var(--th-fg-subtle); }
+    .th-avatar {
+      width: 32px; height: 32px; border-radius: 999px;
+      display: grid; place-items: center;
+      color: white; font-weight: 700; font-size: 11.5px;
+      background: #D97757;
+    }
+
+    /* ───────── Page ───────── */
+    .th-page { padding: 28px 32px 56px; max-width: 1240px; width: 100%; margin: 0 auto; }
+    .th-page-header { display: flex; align-items: flex-end; gap: 16px; margin-bottom: 24px; }
+    .th-page-header .titles { flex: 1; min-width: 0; }
+    .th-page-title { font-size: 28px; line-height: 1.1; }
+    .th-page-subtitle { color: var(--th-fg-muted); margin-top: 6px; font-size: 14px; }
+
+    /* ───────── Buttons ───────── */
+    .th-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px; font-size: 13px; font-weight: 600;
+      border-radius: var(--th-radius-sm); border: 1px solid transparent;
+      background: var(--th-surface); color: var(--th-fg);
+      transition: background .12s, border-color .12s, color .12s, transform .06s;
+      white-space: nowrap;
+    }
+    .th-btn:active { transform: translateY(0.5px); }
+    .th-btn-primary { background: var(--th-primary); color: var(--th-primary-fg); }
+    .th-btn-primary:hover { background: var(--th-primary-hover); }
+    .th-btn-outline { border-color: var(--th-border-strong); }
+    .th-btn-outline:hover { background: var(--th-surface-2); }
+    .th-btn-ghost { background: transparent; color: var(--th-fg-muted); }
+    .th-btn-ghost:hover { background: var(--th-surface-2); color: var(--th-fg); }
+    .th-btn-icon { width: 34px; height: 34px; padding: 0; justify-content: center; background: var(--th-surface); border: 1px solid var(--th-border); border-radius: var(--th-radius-sm); }
+    .th-btn-icon:hover { background: var(--th-surface-2); }
+    .th-btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 6px; }
+    .th-btn:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+
+    /* ───────── Tabs ───────── */
+    .th-tabs {
+      display: inline-flex; background: var(--th-surface-2);
+      border-radius: 9px; padding: 3px; gap: 2px;
+      border: 1px solid var(--th-border);
+    }
+    .th-tab {
+      padding: 6px 12px; font-size: 12.5px; font-weight: 600;
+      color: var(--th-fg-muted); border-radius: 6px;
+      border: none; background: transparent; cursor: pointer;
+      transition: background .12s, color .12s; white-space: nowrap;
+    }
+    .th-tab:hover { color: var(--th-fg); }
+    .th-tab.active { background: var(--th-surface); color: var(--th-fg); box-shadow: var(--th-shadow-xs); }
+
+    /* ───────── Cards ───────── */
+    .th-card {
+      background: var(--th-surface);
+      border: 1px solid var(--th-border);
+      border-radius: var(--th-radius);
+      box-shadow: var(--th-shadow-xs);
+    }
+
+    /* ───────── Trip Grid ───────── */
+    .trips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 18px;
+    }
+    .trip-card {
+      overflow: hidden; cursor: pointer;
+      transition: box-shadow .15s, transform .15s;
+    }
+    .trip-card:hover { box-shadow: var(--th-shadow-md); transform: translateY(-1px); }
+    .trip-cover { width: 100%; height: 168px; display: block; object-fit: cover; position: relative; overflow: hidden; }
+    .trip-cover svg { width: 100%; height: 100%; }
+    .trip-body { padding: 14px 16px 16px; }
+    .trip-name { font-weight: 700; font-size: 15px; font-family: var(--th-font-display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .trip-destination { color: var(--th-fg-muted); font-size: 12.5px; margin-top: 3px; display: flex; align-items: center; gap: 4px; }
+    .trip-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
+    .trip-dates { font-size: 12.5px; color: var(--th-fg-muted); }
+    .trip-participants { display: flex; align-items: center; gap: 5px; color: var(--th-fg-muted); font-size: 12px; }
+
+    /* ───────── Badges ───────── */
+    .th-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 8px; font-size: 11.5px; font-weight: 600;
+      border-radius: 999px; background: var(--th-surface-2);
+      color: var(--th-fg-muted); border: 1px solid var(--th-border);
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .th-badge-primary { background: var(--th-primary-soft); color: var(--th-primary-hover); border-color: transparent; }
+    .th-badge-success { background: var(--th-success-soft); color: var(--th-success); border-color: transparent; }
+    .th-badge-warning { background: var(--th-warning-soft); color: var(--th-warning); border-color: transparent; }
+    .th-badge-info { background: var(--th-info-soft); color: var(--th-info); border-color: transparent; }
+
+    /* ───────── Empty state ───────── */
+    .th-empty {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 72px 24px; text-align: center; color: var(--th-fg-muted);
+      border: 1.5px dashed var(--th-border-strong);
+      border-radius: var(--th-radius-lg);
+      background: var(--th-surface);
+    }
+    .th-empty-icon { color: var(--th-fg-subtle); margin-bottom: 16px; }
+    .th-empty h3 { font-size: 17px; margin-bottom: 8px; }
+    .th-empty p { font-size: 13.5px; max-width: 320px; }
+
+    /* ───────── Modal ───────── */
+    .th-modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(20, 16, 12, 0.4);
+      backdrop-filter: blur(4px);
+      display: grid; place-items: center;
+      z-index: 100;
+      animation: thFadeIn .15s ease-out;
+      padding-top: 44px; /* account for scenario bar */
+    }
+    .th-modal {
+      background: var(--th-surface);
+      border-radius: var(--th-radius-lg);
+      width: min(600px, 92vw);
+      max-height: calc(88vh - 44px);
+      overflow-y: auto;
+      box-shadow: var(--th-shadow-lg);
+      animation: thModalIn .22s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .th-modal-header {
+      padding: 22px 24px 14px;
+      display: flex; align-items: flex-start; gap: 12px;
+      border-bottom: 1px solid var(--th-border);
+    }
+    .th-modal-title { font-size: 18px; font-family: var(--th-font-display); font-weight: 700; letter-spacing: -0.02em; }
+    .th-modal-subtitle { color: var(--th-fg-muted); font-size: 13px; margin-top: 3px; }
+    .th-modal-body { padding: 20px 24px 4px; }
+    .th-modal-footer {
+      padding: 16px 24px 22px;
+      display: flex; gap: 10px; justify-content: flex-end;
+      border-top: 1px solid var(--th-border); margin-top: 18px;
+    }
+    @keyframes thFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes thModalIn {
+      from { opacity: 0; transform: translateY(8px) scale(.98); }
+      to   { opacity: 1; transform: translateY(0)   scale(1); }
+    }
+
+    /* ───────── Form fields ───────── */
+    .th-form-grid { display: flex; flex-direction: column; gap: 16px; }
+    .th-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .th-field { display: flex; flex-direction: column; gap: 5px; }
+    .th-label { font-size: 12.5px; font-weight: 600; color: var(--th-fg); }
+    .th-label .th-label-optional { font-weight: 400; color: var(--th-fg-muted); margin-left: 4px; }
+    .th-input, .th-select {
+      border: 1px solid var(--th-border-strong);
+      background: var(--th-surface);
+      border-radius: var(--th-radius-sm);
+      padding: 8px 11px; font-size: 13px; color: var(--th-fg);
+      transition: border-color .12s, box-shadow .12s;
+      width: 100%;
+    }
+    .th-input:focus, .th-select:focus {
+      outline: none; border-color: var(--th-primary);
+      box-shadow: 0 0 0 3px var(--th-ring);
+    }
+    .th-input.has-error { border-color: var(--th-danger); }
+    .th-input.has-error:focus { box-shadow: 0 0 0 3px rgba(196, 74, 64, 0.25); }
+    .th-help { font-size: 11.5px; color: var(--th-fg-muted); }
+    .th-error-msg {
+      font-size: 11.5px; color: var(--th-danger); font-weight: 500;
+      display: flex; align-items: center; gap: 4px;
+      animation: errorIn .15s ease-out;
+    }
+    @keyframes errorIn { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ───────── Cover picker ───────── */
+    .cover-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .cover-option {
+      position: relative; border-radius: var(--th-radius-md);
+      overflow: hidden; cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color .12s, box-shadow .12s;
+      height: 80px;
+    }
+    .cover-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+    .cover-option svg { width: 100%; height: 100%; display: block; }
+    .cover-option-label {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(0deg, rgba(20,16,12,0.7) 0%, rgba(20,16,12,0) 100%);
+      padding: 10px 8px 7px;
+      font-size: 11px; font-weight: 600; color: white;
+      letter-spacing: 0.02em;
+    }
+    .cover-option:hover { border-color: var(--th-border-strong); }
+    .cover-option.selected { border-color: var(--th-primary); box-shadow: 0 0 0 3px var(--th-ring); }
+    .cover-option.selected::after {
+      content: '';
+      position: absolute; top: 6px; right: 6px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--th-primary);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 13l4 4L19 7'/%3E%3C/svg%3E");
+      background-size: 11px; background-position: center; background-repeat: no-repeat;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .cover-option-none {
+      height: 80px; border-radius: var(--th-radius-md);
+      border: 1.5px dashed var(--th-border-strong);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; cursor: pointer; color: var(--th-fg-muted); font-size: 11.5px; font-weight: 600;
+      transition: border-color .12s, background .12s;
+    }
+    .cover-option-none:hover { background: var(--th-surface-2); border-color: var(--th-border-strong); }
+    .cover-option-none.selected { border-color: var(--th-primary); color: var(--th-primary-hover); background: var(--th-primary-soft); }
+
+    /* ───────── Error banner in modal ───────── */
+    .th-error-banner {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 12px 14px;
+      background: var(--th-danger-soft); border: 1px solid rgba(196, 74, 64, 0.25);
+      border-radius: var(--th-radius); margin-bottom: 2px;
+      animation: errorIn .15s ease-out;
+    }
+    .th-error-banner .msg { font-size: 13px; color: var(--th-danger); font-weight: 500; line-height: 1.45; }
+
+    /* ───────── Toast ───────── */
+    .th-toast-stack { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 300; display: flex; flex-direction: column; gap: 8px; }
+    .th-toast {
+      background: var(--th-fg); color: #fff;
+      padding: 11px 18px; border-radius: 10px; font-size: 13px; font-weight: 500;
+      box-shadow: var(--th-shadow-lg);
+      animation: thToastIn .25s cubic-bezier(0.2, 0.8, 0.2, 1);
+      display: flex; align-items: center; gap: 9px;
+    }
+    @keyframes thToastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ───────── Divider ───────── */
+    .th-divider { height: 1px; background: var(--th-border); border: none; margin: 0; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════ SCENARIO BAR ═══════════════════════ -->
+<div class="scenario-bar">
+  <span class="label">US-001</span>
+  <button class="scenario-btn active" onclick="showScenario('list-with-trips')" id="btn-list-with-trips">
+    1 — Dashboard con viaggi
+  </button>
+  <button class="scenario-btn" onclick="showScenario('list-empty')" id="btn-list-empty">
+    2 — Dashboard vuota
+  </button>
+  <button class="scenario-btn" onclick="showScenario('modal-filled')" id="btn-modal-filled">
+    3 — Modal: form compilato
+  </button>
+  <button class="scenario-btn" onclick="showScenario('modal-errors')" id="btn-modal-errors">
+    4 — Modal: errori inline
+  </button>
+  <span class="scenario-desc">Combriccola — Creazione Viaggio</span>
+</div>
+
+<!-- ═══════════════════════ APP SHELL ═══════════════════════ -->
+<div id="app">
+
+  <!-- ─── Header ─── -->
+  <header class="th-header">
+    <div class="th-header-row">
+      <div class="th-header-brand">
+        <div class="th-brand-mark">C</div>
+        <span>Combriccola</span>
+      </div>
+      <nav class="th-header-nav">
+        <button class="th-header-nav-item active">I miei viaggi</button>
+        <button class="th-header-nav-item">Inviti</button>
+      </nav>
+      <div class="th-header-right">
+        <div class="th-search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="text" placeholder="Cerca viaggio…"/>
+        </div>
+        <div class="th-avatar" title="Marco Bianchi">MB</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ─── Main content (swapped per scenario) ─── -->
+  <main id="main-content">
+    <!-- Inserted by JS -->
+  </main>
+
+</div>
+
+<!-- ═══════════════════════ MODAL (toggled) ═══════════════════════ -->
+<div id="modal-backdrop" class="th-modal-backdrop" style="display:none;" onclick="handleBackdropClick(event)">
+  <div class="th-modal" onclick="event.stopPropagation()">
+
+    <div class="th-modal-header">
+      <div style="flex:1;">
+        <div class="th-modal-title">Crea un nuovo viaggio</div>
+        <div class="th-modal-subtitle">Configura il tuo hub di gruppo in pochi passi.</div>
+      </div>
+      <button class="th-btn th-btn-ghost th-btn-icon" onclick="closeModal()" aria-label="Chiudi">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M6 18L18 6"/></svg>
+      </button>
+    </div>
+
+    <div class="th-modal-body">
+      <!-- Error banner (shown in errors scenario) -->
+      <div id="error-banner" class="th-error-banner" style="display:none;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--th-danger);flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
+        <div class="msg">La data di fine non può essere precedente alla data di inizio. Correggi le date prima di procedere.</div>
+      </div>
+
+      <div class="th-form-grid">
+
+        <!-- Trip name -->
+        <div class="th-field">
+          <label class="th-label">Nome del viaggio <span style="color:var(--th-danger)">*</span></label>
+          <input id="f-name" class="th-input" type="text" placeholder="Es. Weekend a Barcellona"
+                 value="Tokyo in autunno"/>
+        </div>
+
+        <!-- Destination -->
+        <div class="th-field">
+          <label class="th-label">Destinazione principale <span style="color:var(--th-danger)">*</span></label>
+          <div style="position:relative;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--th-fg-muted)"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>
+            <input id="f-destination" class="th-input" type="text"
+                   placeholder="Es. Lisbona, Portogallo" value="Tokyo, Giappone"
+                   style="padding-left:33px;"/>
+          </div>
+        </div>
+
+        <!-- Dates -->
+        <div class="th-grid-2">
+          <div class="th-field">
+            <label class="th-label">Data inizio <span style="color:var(--th-danger)">*</span></label>
+            <input id="f-start" class="th-input" type="date" value="2026-10-12"/>
+            <div id="err-start" class="th-error-msg" style="display:none;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
+              Seleziona una data valida
+            </div>
+          </div>
+          <div class="th-field">
+            <label class="th-label">Data fine <span style="color:var(--th-danger)">*</span></label>
+            <input id="f-end" class="th-input" type="date" value="2026-10-22"/>
+            <div id="err-end" class="th-error-msg" style="display:none;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
+              Deve essere dopo la data di inizio
+            </div>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <hr class="th-divider"/>
+
+        <!-- Cover image picker -->
+        <div class="th-field">
+          <label class="th-label">
+            Immagine di copertina
+            <span class="th-label-optional">(opzionale)</span>
+          </label>
+          <div class="th-help" style="margin-bottom:8px;">Scegli un'illustrazione preset da usare come copertina del viaggio.</div>
+
+          <div class="cover-picker-grid">
+            <!-- None option -->
+            <label class="cover-option-none" id="cover-none" onclick="selectCover('none')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+              Nessuna
+            </label>
+
+            <!-- Tokyo -->
+            <label class="cover-option selected" id="cover-tokyo" onclick="selectCover('tokyo')">
+              <input type="radio" name="cover" value="tokyo" checked/>
+              <svg viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="tk-sky" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#F9C9D5"/><stop offset="1" stop-color="#E89AAB"/>
+                  </linearGradient>
+                </defs>
+                <rect width="400" height="240" fill="url(#tk-sky)"/>
+                <circle cx="80" cy="70" r="32" fill="#E84A4A" opacity="0.85"/>
+                <polygon points="240,200 320,90 400,200" fill="#5B6E8E" opacity="0.7"/>
+                <polygon points="285,140 320,90 355,140 340,150 320,135 300,150" fill="#fff" opacity="0.85"/>
+                <g fill="#3A3346">
+                  <rect x="0" y="160" width="34" height="80"/>
+                  <rect x="34" y="140" width="28" height="100"/>
+                  <rect x="62" y="155" width="22" height="85"/>
+                  <rect x="84" y="125" width="40" height="115"/>
+                  <rect x="124" y="150" width="26" height="90"/>
+                  <rect x="150" y="130" width="34" height="110"/>
+                </g>
+                <g transform="translate(195 70)">
+                  <polygon points="20,0 25,0 35,80 10,80" fill="#E84A4A"/>
+                  <rect x="14" y="80" width="17" height="50" fill="#E84A4A"/>
+                  <polygon points="14,130 31,130 38,170 7,170" fill="#E84A4A"/>
+                </g>
+              </svg>
+              <div class="cover-option-label">tokyo</div>
+            </label>
+
+            <!-- Lisbon -->
+            <label class="cover-option" id="cover-lisbon" onclick="selectCover('lisbon')">
+              <input type="radio" name="cover" value="lisbon"/>
+              <svg viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="lx-sky2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#FFD2B8"/><stop offset="1" stop-color="#F8B6A0"/>
+                  </linearGradient>
+                  <linearGradient id="lx-water2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#A9D5DA"/><stop offset="1" stop-color="#7FB8C0"/>
+                  </linearGradient>
+                </defs>
+                <rect width="400" height="240" fill="url(#lx-sky2)"/>
+                <circle cx="320" cy="70" r="28" fill="#FFE9C8" opacity="0.9"/>
+                <path d="M0 160 Q60 130 120 145 T240 140 T400 150 L400 240 L0 240 Z" fill="#E89A82" opacity="0.55"/>
+                <g>
+                  <rect x="20" y="120" width="40" height="80" fill="#F4D3B5"/>
+                  <rect x="60" y="105" width="46" height="95" fill="#EDB69A"/>
+                  <rect x="106" y="115" width="34" height="85" fill="#F8E1C7"/>
+                  <rect x="140" y="95" width="50" height="105" fill="#E8A07F"/>
+                  <rect x="190" y="110" width="38" height="90" fill="#F4D3B5"/>
+                  <rect x="228" y="100" width="44" height="100" fill="#D9876B"/>
+                  <rect x="272" y="120" width="36" height="80" fill="#F8E1C7"/>
+                  <rect x="308" y="108" width="42" height="92" fill="#E8A07F"/>
+                </g>
+                <rect x="0" y="200" width="400" height="40" fill="url(#lx-water2)"/>
+              </svg>
+              <div class="cover-option-label">lisbon</div>
+            </label>
+
+            <!-- Alps -->
+            <label class="cover-option" id="cover-alps" onclick="selectCover('alps')">
+              <input type="radio" name="cover" value="alps"/>
+              <svg viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="al-sky2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#CFE6F0"/><stop offset="1" stop-color="#E8F1F4"/>
+                  </linearGradient>
+                </defs>
+                <rect width="400" height="240" fill="url(#al-sky2)"/>
+                <circle cx="320" cy="60" r="22" fill="#FFF4E0" opacity="0.85"/>
+                <polygon points="0,200 90,80 160,180 220,110 280,200" fill="#7E92A8"/>
+                <polygon points="160,180 220,110 280,200" fill="#5E7388"/>
+                <polygon points="220,200 320,90 400,180 400,240 220,240" fill="#90A2B8"/>
+                <polygon points="65,120 90,80 115,120 105,128 90,118 78,128" fill="#fff"/>
+                <polygon points="200,150 220,110 240,150 232,156 220,148 208,156" fill="#fff"/>
+                <path d="M0 210 Q100 195 200 205 T400 200 L400 240 L0 240 Z" fill="#fff"/>
+              </svg>
+              <div class="cover-option-label">alps</div>
+            </label>
+
+            <!-- Sicily -->
+            <label class="cover-option" id="cover-sicily" onclick="selectCover('sicily')">
+              <input type="radio" name="cover" value="sicily"/>
+              <svg viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="sc-sky2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#FFE3B8"/><stop offset="1" stop-color="#F4B07A"/>
+                  </linearGradient>
+                  <linearGradient id="sc-sea2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#56A8B4"/><stop offset="1" stop-color="#356E7A"/>
+                  </linearGradient>
+                </defs>
+                <rect width="400" height="240" fill="url(#sc-sky2)"/>
+                <circle cx="80" cy="70" r="30" fill="#FFD78A"/>
+                <polygon points="220,180 300,80 380,180" fill="#5C4A3D"/>
+                <polygon points="270,130 300,80 330,130" fill="#3D3128"/>
+                <rect x="0" y="180" width="400" height="60" fill="url(#sc-sea2)"/>
+              </svg>
+              <div class="cover-option-label">sicily</div>
+            </label>
+
+            <!-- Amsterdam -->
+            <label class="cover-option" id="cover-amsterdam" onclick="selectCover('amsterdam')">
+              <input type="radio" name="cover" value="amsterdam"/>
+              <svg viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="am-sky2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#D9E5EE"/><stop offset="1" stop-color="#B8CDDB"/>
+                  </linearGradient>
+                </defs>
+                <rect width="400" height="240" fill="url(#am-sky2)"/>
+                <circle cx="60" cy="60" r="22" fill="#FFE9C8" opacity="0.7"/>
+                <g>
+                  <rect x="20" y="80" width="36" height="120" fill="#8E5B43"/>
+                  <rect x="56" y="70" width="40" height="130" fill="#C77A4A"/>
+                  <rect x="96" y="85" width="34" height="115" fill="#5B3D2A"/>
+                  <rect x="130" y="65" width="42" height="135" fill="#9B6750"/>
+                  <rect x="172" y="78" width="38" height="122" fill="#D9876B"/>
+                  <rect x="210" y="72" width="40" height="128" fill="#7A4A35"/>
+                  <rect x="250" y="82" width="36" height="118" fill="#A86A4A"/>
+                  <rect x="286" y="68" width="44" height="132" fill="#604030"/>
+                </g>
+                <rect x="0" y="200" width="400" height="40" fill="#3A5570"/>
+              </svg>
+              <div class="cover-option-label">amsterdam</div>
+            </label>
+
+          </div>
+        </div>
+
+      </div><!-- /.th-form-grid -->
+    </div><!-- /.th-modal-body -->
+
+    <div class="th-modal-footer">
+      <button class="th-btn th-btn-ghost" onclick="closeModal()">Annulla</button>
+      <button id="btn-create" class="th-btn th-btn-primary" onclick="handleCreate()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Crea viaggio
+      </button>
+    </div>
+
+  </div><!-- /.th-modal -->
+</div><!-- /.th-modal-backdrop -->
+
+<!-- ─── Toast container ─── -->
+<div class="th-toast-stack" id="toast-stack"></div>
+
+<!-- ═══════════════════════ CONTENT TEMPLATES ═══════════════════════ -->
+
+<template id="tpl-list-with-trips">
+  <div class="th-page">
+    <div class="th-page-header">
+      <div class="titles">
+        <h1 class="th-page-title">I tuoi viaggi</h1>
+        <div class="th-page-subtitle">Tutto il tuo gruppo, in un unico posto.</div>
+      </div>
+      <button class="th-btn th-btn-primary" onclick="openModal()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Nuovo viaggio
+      </button>
+    </div>
+
+    <!-- Filters row -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <div class="th-tabs">
+        <button class="th-tab active">Tutti</button>
+        <button class="th-tab">In arrivo</button>
+        <button class="th-tab">Passati</button>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="th-btn th-btn-outline th-btn-sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 9v6l-4-2v-4z"/></svg>
+          Filtri
+        </button>
+      </div>
+    </div>
+
+    <!-- Trip grid -->
+    <div class="trips-grid">
+
+      <!-- Card 1: Lisbon (active, current) -->
+      <div class="th-card trip-card">
+        <div class="trip-cover">
+          <svg viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="lx-sky3" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#FFD2B8"/><stop offset="1" stop-color="#F8B6A0"/>
+              </linearGradient>
+              <linearGradient id="lx-water3" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#A9D5DA"/><stop offset="1" stop-color="#7FB8C0"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="240" fill="url(#lx-sky3)"/>
+            <circle cx="320" cy="70" r="28" fill="#FFE9C8" opacity="0.9"/>
+            <path d="M0 160 Q60 130 120 145 T240 140 T400 150 L400 240 L0 240 Z" fill="#E89A82" opacity="0.55"/>
+            <rect x="20" y="120" width="40" height="80" fill="#F4D3B5"/>
+            <rect x="60" y="105" width="46" height="95" fill="#EDB69A"/>
+            <rect x="106" y="115" width="34" height="85" fill="#F8E1C7"/>
+            <rect x="140" y="95" width="50" height="105" fill="#E8A07F"/>
+            <rect x="190" y="110" width="38" height="90" fill="#F4D3B5"/>
+            <rect x="228" y="100" width="44" height="100" fill="#D9876B"/>
+            <rect x="272" y="120" width="36" height="80" fill="#F8E1C7"/>
+            <rect x="308" y="108" width="42" height="92" fill="#E8A07F"/>
+            <rect x="0" y="200" width="400" height="40" fill="url(#lx-water3)"/>
+          </svg>
+        </div>
+        <div class="trip-body">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+            <div style="min-width:0;flex:1;">
+              <div class="trip-name">Weekend a Lisbona</div>
+              <div class="trip-destination">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>
+                Lisbona, Portogallo
+              </div>
+            </div>
+            <span class="th-badge th-badge-primary">Tra 16 giorni</span>
+          </div>
+          <div class="trip-meta">
+            <div class="trip-dates">22–25 mag 2026</div>
+            <div class="trip-participants">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><circle cx="17" cy="8" r="3"/><path d="M22 19a5 5 0 0 0-5-5"/></svg>
+              6
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Tokyo (upcoming) -->
+      <div class="th-card trip-card">
+        <div class="trip-cover">
+          <svg viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="tk-sky3" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#F9C9D5"/><stop offset="1" stop-color="#E89AAB"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="240" fill="url(#tk-sky3)"/>
+            <circle cx="80" cy="70" r="32" fill="#E84A4A" opacity="0.85"/>
+            <polygon points="240,200 320,90 400,200" fill="#5B6E8E" opacity="0.7"/>
+            <polygon points="285,140 320,90 355,140 340,150 320,135 300,150" fill="#fff" opacity="0.85"/>
+            <g fill="#3A3346">
+              <rect x="0" y="160" width="34" height="80"/>
+              <rect x="34" y="140" width="28" height="100"/>
+              <rect x="62" y="155" width="22" height="85"/>
+              <rect x="84" y="125" width="40" height="115"/>
+              <rect x="124" y="150" width="26" height="90"/>
+              <rect x="150" y="130" width="34" height="110"/>
+            </g>
+            <g transform="translate(195 70)">
+              <polygon points="20,0 25,0 35,80 10,80" fill="#E84A4A"/>
+              <rect x="14" y="80" width="17" height="50" fill="#E84A4A"/>
+              <polygon points="14,130 31,130 38,170 7,170" fill="#E84A4A"/>
+            </g>
+          </svg>
+        </div>
+        <div class="trip-body">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+            <div style="min-width:0;flex:1;">
+              <div class="trip-name">Tokyo in autunno</div>
+              <div class="trip-destination">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>
+                Tokyo, Giappone
+              </div>
+            </div>
+            <span class="th-badge th-badge-info">In arrivo</span>
+          </div>
+          <div class="trip-meta">
+            <div class="trip-dates">12–22 ott 2026</div>
+            <div class="trip-participants">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><circle cx="17" cy="8" r="3"/><path d="M22 19a5 5 0 0 0-5-5"/></svg>
+              4
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Alps (planning) -->
+      <div class="th-card trip-card">
+        <div class="trip-cover">
+          <svg viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="al-sky3" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#CFE6F0"/><stop offset="1" stop-color="#E8F1F4"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="240" fill="url(#al-sky3)"/>
+            <circle cx="320" cy="60" r="22" fill="#FFF4E0" opacity="0.85"/>
+            <polygon points="0,200 90,80 160,180 220,110 280,200" fill="#7E92A8"/>
+            <polygon points="160,180 220,110 280,200" fill="#5E7388"/>
+            <polygon points="220,200 320,90 400,180 400,240 220,240" fill="#90A2B8"/>
+            <polygon points="65,120 90,80 115,120 105,128 90,118 78,128" fill="#fff"/>
+            <polygon points="200,150 220,110 240,150 232,156 220,148 208,156" fill="#fff"/>
+            <path d="M0 210 Q100 195 200 205 T400 200 L400 240 L0 240 Z" fill="#fff"/>
+          </svg>
+        </div>
+        <div class="trip-body">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+            <div style="min-width:0;flex:1;">
+              <div class="trip-name">Settimana bianca</div>
+              <div class="trip-destination">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>
+                Cortina, Italia
+              </div>
+            </div>
+            <span class="th-badge th-badge-warning">In pianificazione</span>
+          </div>
+          <div class="trip-meta">
+            <div class="trip-dates">18–25 gen 2027</div>
+            <div class="trip-participants">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><circle cx="17" cy="8" r="3"/><path d="M22 19a5 5 0 0 0-5-5"/></svg>
+              8
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Sicily (past) -->
+      <div class="th-card trip-card">
+        <div class="trip-cover">
+          <svg viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="sc-sky3" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#FFE3B8"/><stop offset="1" stop-color="#F4B07A"/>
+              </linearGradient>
+              <linearGradient id="sc-sea3" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#56A8B4"/><stop offset="1" stop-color="#356E7A"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="240" fill="url(#sc-sky3)"/>
+            <circle cx="80" cy="70" r="30" fill="#FFD78A"/>
+            <polygon points="220,180 300,80 380,180" fill="#5C4A3D"/>
+            <polygon points="270,130 300,80 330,130" fill="#3D3128"/>
+            <rect x="0" y="180" width="400" height="60" fill="url(#sc-sea3)"/>
+          </svg>
+        </div>
+        <div class="trip-body">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+            <div style="min-width:0;flex:1;">
+              <div class="trip-name">Road trip Sicilia</div>
+              <div class="trip-destination">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>
+                Sicilia, Italia
+              </div>
+            </div>
+            <span class="th-badge">Concluso</span>
+          </div>
+          <div class="trip-meta">
+            <div class="trip-dates">10–20 ago 2025</div>
+            <div class="trip-participants">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><circle cx="17" cy="8" r="3"/><path d="M22 19a5 5 0 0 0-5-5"/></svg>
+              6
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.trips-grid -->
+  </div><!-- /.th-page -->
+</template>
+
+<template id="tpl-list-empty">
+  <div class="th-page">
+    <div class="th-page-header">
+      <div class="titles">
+        <h1 class="th-page-title">I tuoi viaggi</h1>
+        <div class="th-page-subtitle">Tutto il tuo gruppo, in un unico posto.</div>
+      </div>
+      <button class="th-btn th-btn-primary" onclick="openModal()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Nuovo viaggio
+      </button>
+    </div>
+
+    <div class="th-empty">
+      <div class="th-empty-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>
+        </svg>
+      </div>
+      <h3>Nessun viaggio ancora</h3>
+      <p style="margin-bottom:20px;">Crea il tuo primo viaggio e invita il gruppo — ci vogliono meno di due minuti.</p>
+      <button class="th-btn th-btn-primary" onclick="openModal()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Crea il primo viaggio
+      </button>
+    </div>
+  </div>
+</template>
+
+<script>
+  /* ─── State ─── */
+  let currentScenario = 'list-with-trips';
+  let selectedCover = 'tokyo';
+
+  /* ─── Scenario switcher ─── */
+  function showScenario(id) {
+    currentScenario = id;
+
+    // Update scenario bar buttons
+    document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + id)?.classList.add('active');
+
+    // Hide modal
+    document.getElementById('modal-backdrop').style.display = 'none';
+
+    // Render content
+    if (id === 'list-with-trips' || id === 'list-empty') {
+      const tpl = document.getElementById('tpl-' + id);
+      const content = document.importNode(tpl.content, true);
+      const main = document.getElementById('main-content');
+      main.innerHTML = '';
+      main.appendChild(content);
+    } else if (id === 'modal-filled') {
+      // Load list behind
+      const tpl = document.getElementById('tpl-list-with-trips');
+      const content = document.importNode(tpl.content, true);
+      const main = document.getElementById('main-content');
+      main.innerHTML = '';
+      main.appendChild(content);
+      // Show modal in clean state
+      resetModalToFilled();
+      openModal();
+    } else if (id === 'modal-errors') {
+      // Load list behind
+      const tpl = document.getElementById('tpl-list-with-trips');
+      const content = document.importNode(tpl.content, true);
+      const main = document.getElementById('main-content');
+      main.innerHTML = '';
+      main.appendChild(content);
+      // Show modal with errors
+      resetModalToErrors();
+      openModal();
+    }
+  }
+
+  /* ─── Modal helpers ─── */
+  function openModal() {
+    document.getElementById('modal-backdrop').style.display = 'grid';
+  }
+
+  function closeModal() {
+    document.getElementById('modal-backdrop').style.display = 'none';
+    // Sync scenario bar back to list
+    if (currentScenario === 'modal-filled' || currentScenario === 'modal-errors') {
+      showScenario('list-with-trips');
+    }
+  }
+
+  function handleBackdropClick(e) {
+    if (e.target === document.getElementById('modal-backdrop')) closeModal();
+  }
+
+  function resetModalToFilled() {
+    // Filled state: valid dates, tokyo cover selected, no errors
+    document.getElementById('f-name').value = 'Tokyo in autunno';
+    document.getElementById('f-destination').value = 'Tokyo, Giappone';
+    document.getElementById('f-start').value = '2026-10-12';
+    document.getElementById('f-end').value = '2026-10-22';
+    document.getElementById('f-start').classList.remove('has-error');
+    document.getElementById('f-end').classList.remove('has-error');
+    document.getElementById('err-start').style.display = 'none';
+    document.getElementById('err-end').style.display = 'none';
+    document.getElementById('error-banner').style.display = 'none';
+    selectCover('tokyo');
+  }
+
+  function resetModalToErrors() {
+    // Error state: end date before start date, name filled, errors shown
+    document.getElementById('f-name').value = 'Weekend a Barcellona';
+    document.getElementById('f-destination').value = 'Barcellona, Spagna';
+    document.getElementById('f-start').value = '2026-09-20';
+    document.getElementById('f-end').value = '2026-09-15'; // before start!
+    document.getElementById('f-start').classList.remove('has-error');
+    document.getElementById('f-end').classList.add('has-error');
+    document.getElementById('err-start').style.display = 'none';
+    document.getElementById('err-end').style.display = 'flex';
+    document.getElementById('error-banner').style.display = 'flex';
+    selectCover('none');
+  }
+
+  /* ─── Cover picker ─── */
+  function selectCover(key) {
+    selectedCover = key;
+    // Reset all
+    document.querySelectorAll('.cover-option').forEach(el => el.classList.remove('selected'));
+    document.getElementById('cover-none').classList.remove('selected');
+    // Apply
+    if (key === 'none') {
+      document.getElementById('cover-none').classList.add('selected');
+    } else {
+      const el = document.getElementById('cover-' + key);
+      if (el) el.classList.add('selected');
+    }
+  }
+
+  /* ─── Create handler (scenario 3) ─── */
+  function handleCreate() {
+    const name = document.getElementById('f-name')?.value?.trim();
+    const start = document.getElementById('f-start')?.value;
+    const end = document.getElementById('f-end')?.value;
+    if (!name || !start || !end) return;
+    if (new Date(end) < new Date(start)) {
+      document.getElementById('f-end').classList.add('has-error');
+      document.getElementById('err-end').style.display = 'flex';
+      document.getElementById('error-banner').style.display = 'flex';
+      return;
+    }
+    // Success: close modal + toast
+    closeModal();
+    showToast('✓ Viaggio "' + name + '" creato con successo!');
+  }
+
+  /* ─── Toast ─── */
+  function showToast(text) {
+    const stack = document.getElementById('toast-stack');
+    const toast = document.createElement('div');
+    toast.className = 'th-toast';
+    toast.innerHTML = `
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#7BD89E;flex-shrink:0"><path d="M5 13l4 4L19 7"/></svg>
+      ${text}
+    `;
+    stack.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity .3s'; setTimeout(() => toast.remove(), 320); }, 3200);
+  }
+
+  /* ─── Init ─── */
+  showScenario('list-with-trips');
+</script>
+</body>
+</html>

@@ -46,7 +46,7 @@
 
 #### US-001: Creazione viaggio
 
-**Epic:** EP-001 | **Priority:** HIGH | **Story Points:** 3
+**Epic:** EP-001 | **Priority:** HIGH | **Story Points:** 3 | **Status:** PLANNED
 
 **Story**
 Come Marco (Coordinatore),

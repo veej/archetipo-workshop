@@ -67,15 +67,16 @@ model TripParticipant {
 }
 
 model ItineraryStop {
-  id        String   @id @default(uuid())
+  id        String        @id @default(uuid())
   tripId    String
   name      String
   date      DateTime
   time      String?
+  category  StopCategory?
   address   String?
   notes     String?
-  createdAt DateTime @default(now())
-  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+  trip      Trip          @relation(fields: [tripId], references: [id], onDelete: Cascade)
 
   @@map("itinerary_stops")
 }
@@ -136,4 +137,12 @@ enum DocumentCategory {
   HOTEL
   BOOKING
   OTHER
+}
+
+enum StopCategory {
+  FLIGHT
+  ACCOMMODATION
+  FOOD
+  ACTIVITY
+  TRANSPORT
 }

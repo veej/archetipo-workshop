@@ -3,6 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
+import type { StopCategory } from "@prisma/client";
+
+const VALID_CATEGORIES = new Set<StopCategory>(["FLIGHT", "ACCOMMODATION", "FOOD", "ACTIVITY", "TRANSPORT"]);
 
 export type AddStopResult =
   | { success: true }
@@ -43,6 +46,11 @@ export async function addItineraryStop(
   const name = (formData.get("name") as string | null)?.trim();
   const dateRaw = (formData.get("date") as string | null)?.trim();
   const time = (formData.get("time") as string | null)?.trim() || null;
+  const categoryRaw = (formData.get("category") as string | null)?.trim() || null;
+  const category: StopCategory | null =
+    categoryRaw && VALID_CATEGORIES.has(categoryRaw as StopCategory)
+      ? (categoryRaw as StopCategory)
+      : null;
   const address = (formData.get("address") as string | null)?.trim() || null;
   const notes = (formData.get("notes") as string | null)?.trim() || null;
 
@@ -60,6 +68,7 @@ export async function addItineraryStop(
       name: name!,
       date: new Date(dateRaw!),
       time: time || null,
+      category,
       address,
       notes,
     },

@@ -42,17 +42,38 @@ interface AddStopModalProps {
   defaultDate?: string;
 }
 
-// ─── Helper ───────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function toISODate(date: Date): string {
   return new Date(date).toISOString().slice(0, 10);
 }
 
-function formatDateHint(start: Date, end: Date): string {
-  const fmt = (d: Date) =>
-    new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short", year: "numeric" }).format(new Date(d));
-  return `Tra il ${fmt(start)} e ${fmt(end)}`;
+function getDaysBetween(start: Date, end: Date): Date[] {
+  const days: Date[] = [];
+  const current = new Date(start);
+  current.setUTCHours(0, 0, 0, 0);
+  const last = new Date(end);
+  last.setUTCHours(0, 0, 0, 0);
+  while (current <= last) {
+    days.push(new Date(current));
+    current.setUTCDate(current.getUTCDate() + 1);
+  }
+  return days;
 }
+
+function formatDayOption(date: Date): string {
+  return new Intl.DateTimeFormat("it-IT", { weekday: "long", day: "numeric", month: "long" }).format(new Date(date));
+}
+
+// ─── Category options ─────────────────────────────────────────────────────────
+
+const CATEGORIES = [
+  { value: "FLIGHT",        label: "Volo" },
+  { value: "ACCOMMODATION", label: "Alloggio" },
+  { value: "FOOD",          label: "Cibo" },
+  { value: "ACTIVITY",      label: "Attività" },
+  { value: "TRANSPORT",     label: "Trasporti" },
+] as const;
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -97,9 +118,8 @@ export function AddStopModal({ open, onOpenChange, tripId, trip, defaultDate }: 
     }
   }, [state, onOpenChange]);
 
+  const tripDays = getDaysBetween(trip.startDate, trip.endDate);
   const minDate = toISODate(trip.startDate);
-  const maxDate = toISODate(trip.endDate);
-  const dateHint = formatDateHint(trip.startDate, trip.endDate);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -107,46 +127,52 @@ export function AddStopModal({ open, onOpenChange, tripId, trip, defaultDate }: 
         {/* Header */}
         <DialogHeader style={{ padding: "22px 24px 18px", borderBottom: "1px solid " + T.border }}>
           <DialogTitle style={{ fontSize: 17, fontWeight: 700, letterSpacing: "-0.025em", color: T.fg }}>
-            Aggiungi tappa
+            Nuova tappa
           </DialogTitle>
           <DialogDescription style={{ fontSize: 13, color: errors._form ? T.primaryHover : T.fgMuted, marginTop: 3 }}>
-            {errors._form ?? `${trip.name}`}
+            {errors._form ?? "Aggiungi un’attività, un’esperienza o un pasto al programma."}
           </DialogDescription>
         </DialogHeader>
 
         {/* Form */}
         <form action={formAction}>
           <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
-            {/* Name */}
+            {/* Title */}
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               <label style={{ fontSize: 12.5, fontWeight: 600, color: T.fg, fontFamily: T.fontSans }}>
-                Nome tappa<span style={{ color: T.primary, marginLeft: 2 }}>*</span>
+                Titolo<span style={{ color: T.primary, marginLeft: 2 }}>*</span>
               </label>
               <input
                 name="name"
                 type="text"
-                placeholder="es. Volo FCO → LIS, Check-in hotel…"
+                placeholder="Es. Visita alla Torre di Belém"
                 style={inputStyle(!!errors.name)}
               />
               <FieldError message={errors.name} />
             </div>
 
-            {/* Date + Time row */}
+            {/* Day + Time row */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              {/* Date */}
+              {/* Day select */}
               <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 <label style={{ fontSize: 12.5, fontWeight: 600, color: T.fg, fontFamily: T.fontSans }}>
                   Giorno<span style={{ color: T.primary, marginLeft: 2 }}>*</span>
                 </label>
-                <input
+                <select
                   name="date"
-                  type="date"
-                  min={minDate}
-                  max={maxDate}
                   defaultValue={defaultDate ?? minDate}
-                  style={inputStyle(!!errors.date)}
-                />
-                <span style={{ fontSize: 11.5, color: T.fgSubtle, fontFamily: T.fontSans }}>{dateHint}</span>
+                  style={{ ...inputStyle(!!errors.date), appearance: "auto" }}
+                >
+                  {tripDays.map((day) => {
+                    const val = toISODate(day);
+                    const label = formatDayOption(day);
+                    return (
+                      <option key={val} value={val}>
+                        {label.charAt(0).toUpperCase() + label.slice(1)}
+                      </option>
+                    );
+                  })}
+                </select>
                 <FieldError message={errors.date} />
               </div>
 
@@ -160,6 +186,24 @@ export function AddStopModal({ open, onOpenChange, tripId, trip, defaultDate }: 
               </div>
             </div>
 
+            {/* Category */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              <label style={{ fontSize: 12.5, fontWeight: 600, color: T.fg, fontFamily: T.fontSans }}>
+                Categoria{" "}
+                <span style={{ color: T.fgSubtle, fontWeight: 500 }}>(opzionale)</span>
+              </label>
+              <select
+                name="category"
+                defaultValue=""
+                style={{ ...inputStyle(), appearance: "auto" }}
+              >
+                <option value="">— Nessuna —</option>
+                {CATEGORIES.map(({ value, label }) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </div>
+
             {/* Address */}
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               <label style={{ fontSize: 12.5, fontWeight: 600, color: T.fg, fontFamily: T.fontSans }}>
@@ -169,7 +213,7 @@ export function AddStopModal({ open, onOpenChange, tripId, trip, defaultDate }: 
               <input
                 name="address"
                 type="text"
-                placeholder="es. Rua dos Fanqueiros 81, Lisboa"
+                placeholder="Es. Praça do Império, 1400-206 Lisboa"
                 style={inputStyle()}
               />
             </div>
@@ -182,7 +226,7 @@ export function AddStopModal({ open, onOpenChange, tripId, trip, defaultDate }: 
               </label>
               <textarea
                 name="notes"
-                placeholder="Dettagli utili per il gruppo…"
+                placeholder="Codice prenotazione, dettagli, link…"
                 style={{ ...inputStyle(), resize: "vertical", minHeight: 72 }}
               />
             </div>
@@ -202,9 +246,6 @@ export function AddStopModal({ open, onOpenChange, tripId, trip, defaultDate }: 
               disabled={isPending}
               style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", fontSize: 13, fontWeight: 600, borderRadius: T.radiusSm, border: "1px solid " + T.primary, background: isPending ? T.primaryHover : T.primary, color: T.primaryFg, cursor: isPending ? "not-allowed" : "pointer", opacity: isPending ? 0.7 : 1, fontFamily: T.fontSans, transition: "background .12s, opacity .12s" }}
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
               {isPending ? "Salvataggio…" : "Aggiungi tappa"}
             </button>
           </div>

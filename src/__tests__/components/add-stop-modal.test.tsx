@@ -108,15 +108,14 @@ describe("AddStopModal", () => {
       expect(submitButton).not.toBeDisabled();
     });
 
-    it("invoca l'azione con solo nome e data compilati (senza orario, indirizzo, note)", async () => {
+    it("invoca l'azione con solo nome compilato (giorno già selezionato di default)", async () => {
       vi.mocked(addItineraryStop).mockResolvedValue({ success: true });
 
       renderModal();
 
-      const nameInput = screen.getByPlaceholderText(/es\. volo fco/i);
+      const nameInput = screen.getByPlaceholderText(/visita alla torre/i);
       fireEvent.change(nameInput, { target: { value: "Check-in hotel" } });
 
-      // La data ha già un valore di default (minDate), quindi è già compilata
       fireEvent.click(screen.getByRole("button", { name: /aggiungi tappa/i }));
 
       await waitFor(() => {
@@ -151,7 +150,7 @@ describe("AddStopModal", () => {
         />
       );
 
-      const nameInput = screen.getByPlaceholderText(/es\. volo fco/i);
+      const nameInput = screen.getByPlaceholderText(/visita alla torre/i);
       fireEvent.change(nameInput, { target: { value: "Arrivo a Lisbona" } });
       fireEvent.click(screen.getByRole("button", { name: /aggiungi tappa/i }));
 
@@ -165,7 +164,7 @@ describe("AddStopModal", () => {
 
       renderModal();
 
-      const nameInput = screen.getByPlaceholderText(/es\. volo fco/i);
+      const nameInput = screen.getByPlaceholderText(/visita alla torre/i);
       fireEvent.change(nameInput, { target: { value: "Arrivo a Lisbona" } });
       fireEvent.click(screen.getByRole("button", { name: /aggiungi tappa/i }));
 
@@ -204,16 +203,18 @@ describe("AddStopModal", () => {
 
   // 4. Struttura e rendering di base
   describe("rendering", () => {
-    it("mostra il titolo 'Aggiungi tappa'", () => {
+    it("mostra il titolo 'Nuova tappa'", () => {
       renderModal();
       expect(
-        screen.getByRole("heading", { name: /aggiungi tappa/i })
+        screen.getByRole("heading", { name: /nuova tappa/i })
       ).toBeInTheDocument();
     });
 
-    it("mostra il nome del viaggio nella descrizione dell'header", () => {
+    it("mostra la descrizione del modal nell'header", () => {
       renderModal();
-      expect(screen.getByText("Lisbona 2026")).toBeInTheDocument();
+      expect(
+        screen.getByText(/pasto al programma/i)
+      ).toBeInTheDocument();
     });
 
     it("mostra il pulsante Annulla che chiama onOpenChange(false)", () => {
@@ -231,21 +232,21 @@ describe("AddStopModal", () => {
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it("il campo data ha min e max vincolati alle date del viaggio", () => {
+    it("il select giorno contiene le opzioni per tutti i giorni del viaggio", () => {
       renderModal();
-      const dateInput = document.querySelector('input[name="date"]') as HTMLInputElement;
-      expect(dateInput).not.toBeNull();
-      expect(dateInput.min).toBe("2026-05-22");
-      expect(dateInput.max).toBe("2026-05-25");
+      const dateSelect = document.querySelector('select[name="date"]') as HTMLSelectElement;
+      expect(dateSelect).not.toBeNull();
+      // 4 giorni: 22, 23, 24, 25 maggio
+      expect(dateSelect.options).toHaveLength(4);
     });
 
-    it("il campo data ha come valore di default la data di inizio viaggio", () => {
+    it("il select giorno ha come valore di default la data di inizio viaggio", () => {
       renderModal();
-      const dateInput = document.querySelector('input[name="date"]') as HTMLInputElement;
-      expect(dateInput.defaultValue).toBe("2026-05-22");
+      const dateSelect = document.querySelector('select[name="date"]') as HTMLSelectElement;
+      expect(dateSelect.value).toBe("2026-05-22");
     });
 
-    it("accetta una defaultDate personalizzata per il campo data", () => {
+    it("accetta una defaultDate personalizzata per il select giorno", () => {
       render(
         <AddStopModal
           open={true}
@@ -255,8 +256,16 @@ describe("AddStopModal", () => {
           defaultDate="2026-05-24"
         />
       );
-      const dateInput = document.querySelector('input[name="date"]') as HTMLInputElement;
-      expect(dateInput.defaultValue).toBe("2026-05-24");
+      const dateSelect = document.querySelector('select[name="date"]') as HTMLSelectElement;
+      expect(dateSelect.value).toBe("2026-05-24");
+    });
+
+    it("mostra il select categoria con le 5 opzioni previste", () => {
+      renderModal();
+      const categorySelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
+      expect(categorySelect).not.toBeNull();
+      // opzione vuota + 5 categorie
+      expect(categorySelect.options).toHaveLength(6);
     });
   });
 });

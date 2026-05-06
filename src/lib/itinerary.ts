@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/prisma";
-import type { TripRole } from "@prisma/client";
+import type { TripRole, StopCategory } from "@prisma/client";
 
 export type ItineraryStop = {
   id: string;
   name: string;
   date: Date;
   time: string | null;
+  category: StopCategory | null;
   address: string | null;
   notes: string | null;
 };
@@ -48,7 +49,7 @@ export async function getItineraryStops(
   const stops = await prisma.itineraryStop.findMany({
     where: { tripId },
     orderBy: [{ date: "asc" }, { time: "asc" }],
-    select: { id: true, name: true, date: true, time: true, address: true, notes: true },
+    select: { id: true, name: true, date: true, time: true, category: true, address: true, notes: true },
   });
 
   return {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { TripRole } from "@prisma/client";
+import type { TripRole, StopCategory } from "@prisma/client";
 import type { ItineraryData, ItineraryStop } from "@/lib/itinerary";
 import { AddStopModal } from "./add-stop-modal";
 
@@ -106,6 +106,49 @@ function IconMoreH({ size = 13 }: { size?: number }) {
   );
 }
 
+// ─── Category icon ────────────────────────────────────────────────────────────
+
+const CATEGORY_STYLE: Record<StopCategory, { bg: string; color: string }> = {
+  FLIGHT:        { bg: "#E4EDFB", color: "#2A6FDB" },
+  ACCOMMODATION: { bg: "#FCE9E6", color: "#C94A40" },
+  FOOD:          { bg: "#FBF1DD", color: "#B8761E" },
+  ACTIVITY:      { bg: "#E5F2EC", color: "#2F8A5F" },
+  TRANSPORT:     { bg: "#F6F4F0", color: "#6E6A66" },
+};
+
+function StopIcon({ category }: { category: StopCategory | null }) {
+  const style = category ? CATEGORY_STYLE[category] : { bg: "#F6F4F0", color: "#A09C97" };
+  return (
+    <div style={{ width: 30, height: 30, borderRadius: 8, display: "grid", placeItems: "center", flexShrink: 0, margin: "0 12px 0 2px", background: style.bg, color: style.color }}>
+      {category === "FLIGHT" && (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4c-1 0-1.5.5-3.5 2.5L11 8 2.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L6 12l-2 3H1l-1 1 3 2 2 3 1-1v-3l3-2 3.5 4.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>
+        </svg>
+      )}
+      {category === "ACCOMMODATION" && (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      )}
+      {category === "FOOD" && (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 11l19-9-9 19-2-8-8-2z"/>
+        </svg>
+      )}
+      {category === "ACTIVITY" && (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/>
+        </svg>
+      )}
+      {(category === "TRANSPORT" || category === null) && (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/>
+        </svg>
+      )}
+    </div>
+  );
+}
+
 // ─── Stop item ────────────────────────────────────────────────────────────────
 
 function StopItem({ stop, isLast }: { stop: ItineraryStop; isLast: boolean }) {
@@ -126,12 +169,7 @@ function StopItem({ stop, isLast }: { stop: ItineraryStop; isLast: boolean }) {
         {!isLast && <div style={{ width: 1.5, flex: 1, background: T.border, minHeight: 24, marginTop: 4 }} />}
       </div>
 
-      {/* Generic stop icon */}
-      <div style={{ width: 30, height: 30, borderRadius: 8, display: "grid", placeItems: "center", flexShrink: 0, margin: "0 12px 0 2px", background: T.surface2, color: T.fgMuted }}>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z" /><circle cx="12" cy="10" r="3" />
-        </svg>
-      </div>
+      <StopIcon category={stop.category} />
 
       {/* Body */}
       <div style={{ flex: 1, minWidth: 0, paddingTop: 2 }}>

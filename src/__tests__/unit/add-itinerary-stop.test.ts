@@ -237,6 +237,7 @@ describe("addItineraryStop — successo", () => {
         name: "Visita al Colosseo",
         date: new Date("2026-08-20"),
         time: "10:30",
+        category: null,
         address: "Piazza del Colosseo, Roma",
         notes: "Portare acqua",
       },

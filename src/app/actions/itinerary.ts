@@ -54,15 +54,11 @@ export async function addItineraryStop(
     return { success: false, errors };
   }
 
-  // Parse YYYY-MM-DD in local time to avoid UTC midnight shifting the day
-  const [year, month, day] = dateRaw!.split("-").map(Number);
-  const date = new Date(year, month - 1, day);
-
   await prisma.itineraryStop.create({
     data: {
       tripId,
       name: name!,
-      date,
+      date: new Date(dateRaw!),
       time: time || null,
       address,
       notes,

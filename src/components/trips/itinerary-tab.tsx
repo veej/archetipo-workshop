@@ -179,38 +179,9 @@ function EmptyState({ isOrganizer, onAdd }: { isOrganizer: boolean; onAdd: () =>
           style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", fontSize: 13, fontWeight: 600, borderRadius: T.radiusSm, border: "1px solid " + T.primary, background: T.primary, color: T.primaryFg, cursor: "pointer" }}
         >
           <IconPlus size={13} />
-          Aggiungi la prima tappa
+          Aggiungi una tappa
         </button>
       )}
-    </div>
-  );
-}
-
-// ─── Global empty state (no stops at all) ─────────────────────────────────────
-
-function GlobalEmptyState({ isOrganizer, onAdd }: { isOrganizer: boolean; onAdd: () => void }) {
-  return (
-    <div style={{ background: T.surface, border: "1px solid " + T.border, borderRadius: T.radius, boxShadow: T.shadowXs }}>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "56px 32px", textAlign: "center" }}>
-        <div style={{ width: 52, height: 52, borderRadius: T.radiusMd, border: "2px dashed " + T.borderStrong, display: "grid", placeItems: "center", color: T.fgSubtle, marginBottom: 14 }}>
-          <IconCalendar />
-        </div>
-        <div style={{ fontSize: 14, fontWeight: 700, fontFamily: T.fontDisplay, marginBottom: 5, color: T.fg }}>
-          Nessuna tappa nell&apos;itinerario
-        </div>
-        <p style={{ fontSize: 12.5, color: T.fgMuted, maxWidth: 260, lineHeight: 1.5, marginBottom: 18 }}>
-          Inizia ad aggiungere tappe per costruire il piano del viaggio giorno per giorno.
-        </p>
-        {isOrganizer && (
-          <button
-            onClick={onAdd}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", fontSize: 13, fontWeight: 600, borderRadius: T.radiusSm, border: "1px solid " + T.primary, background: T.primary, color: T.primaryFg, cursor: "pointer" }}
-          >
-            <IconPlus size={13} />
-            Aggiungi una tappa
-          </button>
-        )}
-      </div>
     </div>
   );
 }
@@ -248,6 +219,7 @@ export function ItineraryTab({ tripId, data }: ItineraryTabProps) {
   return (
     <>
       <AddStopModal
+        key={selectedDay}
         open={modalOpen}
         onOpenChange={setModalOpen}
         tripId={tripId}
@@ -281,14 +253,8 @@ export function ItineraryTab({ tripId, data }: ItineraryTabProps) {
         </div>
       </div>
 
-      {/* ── Global empty state (no stops at all) ── */}
-      {totalStops === 0 && (
-        <GlobalEmptyState isOrganizer={isOrganizer} onAdd={() => setModalOpen(true)} />
-      )}
-
       {/* ── Two-column layout ── */}
-      {totalStops > 0 && (
-        <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+      <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
           {/* Days sidebar */}
           <aside style={{ width: 200, flexShrink: 0, display: "flex", flexDirection: "column", gap: 8 }}>
             {tripDays.map((day, idx) => {
@@ -360,7 +326,6 @@ export function ItineraryTab({ tripId, data }: ItineraryTabProps) {
             )}
           </section>
         </div>
-      )}
     </>
   );
 }

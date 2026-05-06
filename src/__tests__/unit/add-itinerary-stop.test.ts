@@ -235,7 +235,7 @@ describe("addItineraryStop — successo", () => {
       data: {
         tripId: TRIP_ID,
         name: "Visita al Colosseo",
-        date: new Date(2026, 7, 20),
+        date: new Date("2026-08-20"),
         time: "10:30",
         address: "Piazza del Colosseo, Roma",
         notes: "Portare acqua",

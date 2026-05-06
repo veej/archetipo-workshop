@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>US-005 — Combriccola: Accettazione Invito</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    /* ───────── Design Tokens ───────── */
+    :root {
+      --th-primary:       #E55A4E;
+      --th-primary-hover: #C94A40;
+      --th-primary-soft:  #FCE9E6;
+      --th-primary-fg:    #FFFFFF;
+
+      --th-bg:            #FAFAF7;
+      --th-surface:       #FFFFFF;
+      --th-surface-2:     #F6F4F0;
+      --th-fg:            #1B1A19;
+      --th-fg-muted:      #6E6A66;
+      --th-fg-subtle:     #A09C97;
+      --th-border:        #E8E4DE;
+
+      --th-warning:       #B8761E;
+      --th-warning-soft:  #FBF1DD;
+      --th-danger:        #C44A40;
+      --th-danger-soft:   #FCE9E6;
+
+      --th-radius-md: 12px;
+      --th-radius-xl: 24px;
+
+      --th-shadow-xl: 0 24px 64px rgba(20,16,12,0.12), 0 8px 24px rgba(20,16,12,0.06);
+
+      --th-font-sans:    'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+      --th-font-display: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    }
+
+    /* ───────── Base ───────── */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: var(--th-bg);
+      color: var(--th-fg);
+      font-family: var(--th-font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+    button { font-family: inherit; cursor: pointer; }
+    a { color: inherit; text-decoration: none; }
+    h1, h2, h3, h4 { font-family: var(--th-font-display); font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+    p { margin: 0; }
+
+    /* ───────── Scenario bar ───────── */
+    .scenario-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      background: var(--th-fg);
+      padding: 10px 20px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .scenario-bar .label {
+      color: rgba(255,255,255,0.6); font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap;
+    }
+    .scenario-btn {
+      padding: 5px 14px;
+      font-size: 12.5px; font-weight: 600;
+      border-radius: 6px;
+      border: 1.5px solid rgba(255,255,255,0.15);
+      background: transparent;
+      color: rgba(255,255,255,0.65);
+      cursor: pointer;
+      transition: all .12s;
+      white-space: nowrap;
+    }
+    .scenario-btn:hover { border-color: rgba(255,255,255,0.4); color: white; }
+    .scenario-btn.active { background: var(--th-primary); border-color: var(--th-primary); color: white; }
+    .scenario-desc { margin-left: auto; color: rgba(255,255,255,0.4); font-size: 11.5px; }
+
+    /* ───────── Page layout ───────── */
+    body { padding-top: 44px; }
+
+    .invite-page {
+      min-height: calc(100vh - 44px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ───────── Decorative background ───────── */
+    .invite-bg {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .invite-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 900px 600px at 50% -10%, rgba(229,90,78,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 600px 400px at 80% 80%, rgba(184,118,30,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 500px 400px at 10% 70%, rgba(42,111,219,0.04) 0%, transparent 60%);
+    }
+    .invite-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(27,26,25,0.07) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 80%);
+    }
+    .bg-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(229,90,78,0.08);
+    }
+    .bg-ring-1 { width: 600px;  height: 600px;  top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .bg-ring-2 { width: 900px;  height: 900px;  top: 50%; left: 50%; transform: translate(-50%, -50%); border-color: rgba(229,90,78,0.04); }
+    .bg-ring-3 { width: 1200px; height: 1200px; top: 50%; left: 50%; transform: translate(-50%, -50%); border-color: rgba(229,90,78,0.025); }
+
+    /* ───────── Card ───────── */
+    .invite-card {
+      position: relative;
+      background: var(--th-surface);
+      border: 1px solid var(--th-border);
+      border-radius: var(--th-radius-xl);
+      box-shadow: var(--th-shadow-xl);
+      width: 100%;
+      max-width: 420px;
+      overflow: hidden;
+      animation: card-enter 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes card-enter {
+      from { opacity: 0; transform: translateY(18px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .invite-card-accent {
+      height: 3px;
+      background: linear-gradient(90deg, var(--th-primary) 0%, #E8846A 50%, #F0A882 100%);
+    }
+
+    .invite-card-body {
+      padding: 32px 32px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    /* ───────── Brand mark ───────── */
+    .invite-brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 28px;
+      animation: card-enter 0.5s 0.05s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .invite-brand-mark {
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      background: var(--th-primary);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-family: var(--th-font-display);
+      font-weight: 800;
+      font-size: 15px;
+      box-shadow: 0 6px 16px -4px rgba(229,90,78,0.50);
+      flex-shrink: 0;
+    }
+    .invite-brand-name {
+      font-family: var(--th-font-display);
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: -0.025em;
+      color: var(--th-fg);
+    }
+
+    /* ───────── State icon ───────── */
+    .invite-state-icon {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      margin-bottom: 20px;
+      animation: icon-pop 0.4s 0.12s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    @keyframes icon-pop {
+      from { opacity: 0; transform: scale(0.6); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .invite-state-icon.error-expired { background: var(--th-warning-soft); color: var(--th-warning); }
+    .invite-state-icon.error-invalid { background: var(--th-danger-soft);  color: var(--th-danger); }
+    .invite-state-icon.loading       { background: var(--th-primary-soft); color: var(--th-primary); }
+
+    /* ───────── Content ───────── */
+    .invite-heading {
+      font-size: 21px;
+      letter-spacing: -0.025em;
+      margin-bottom: 10px;
+      animation: card-enter 0.5s 0.16s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .invite-subtext {
+      font-size: 14px;
+      color: var(--th-fg-muted);
+      line-height: 1.6;
+      max-width: 300px;
+      margin-bottom: 28px;
+      animation: card-enter 0.5s 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    /* ───────── CTA button ───────── */
+    .invite-cta {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: var(--th-font-display);
+      border-radius: var(--th-radius-md);
+      border: none;
+      background: var(--th-fg);
+      color: white;
+      cursor: pointer;
+      transition: background 0.14s, transform 0.07s, box-shadow 0.14s;
+      letter-spacing: -0.01em;
+      box-shadow: 0 2px 8px rgba(27,26,25,0.18);
+      animation: card-enter 0.5s 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .invite-cta:hover { background: #2E2D2C; box-shadow: 0 4px 16px rgba(27,26,25,0.22); }
+    .invite-cta:active { transform: translateY(0.5px); }
+
+    /* ───────── Divider ───────── */
+    .invite-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      margin: 16px 0;
+      animation: card-enter 0.5s 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .invite-divider-line { flex: 1; height: 1px; background: var(--th-border); }
+    .invite-divider-text { font-size: 11.5px; color: var(--th-fg-subtle); font-weight: 500; }
+
+    /* ───────── Footer link ───────── */
+    .invite-footer-link {
+      font-size: 13px;
+      color: var(--th-fg-muted);
+      font-weight: 500;
+      animation: card-enter 0.5s 0.33s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .invite-footer-link span { color: var(--th-primary); font-weight: 600; cursor: pointer; }
+    .invite-footer-link span:hover { text-decoration: underline; }
+
+    /* ───────── Loading spinner ───────── */
+    .spinner {
+      width: 28px; height: 28px;
+      border: 2.5px solid rgba(229,90,78,0.2);
+      border-top-color: var(--th-primary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ───────── Below-card tagline ───────── */
+    .invite-tagline {
+      margin-top: 24px;
+      font-size: 12px;
+      color: var(--th-fg-subtle);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      animation: card-enter 0.5s 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    /* ───────── State visibility ───────── */
+    .state-scaduto, .state-invalido, .state-loading { display: none; }
+    .state-scaduto.active, .state-invalido.active, .state-loading.active { display: contents; }
+  </style>
+</head>
+<body>
+
+  <!-- Scenario bar -->
+  <div class="scenario-bar">
+    <span class="label">Scenario</span>
+    <button class="scenario-btn active" onclick="setScenario('scaduto', this)">Token scaduto</button>
+    <button class="scenario-btn" onclick="setScenario('invalido', this)">Token non valido</button>
+    <button class="scenario-btn" onclick="setScenario('loading', this)">Redirect in corso</button>
+    <span class="scenario-desc" id="scenario-desc">Link scaduto — errore con CTA</span>
+  </div>
+
+  <!-- Decorative background -->
+  <div class="invite-bg">
+    <div class="bg-ring bg-ring-1"></div>
+    <div class="bg-ring bg-ring-2"></div>
+    <div class="bg-ring bg-ring-3"></div>
+  </div>
+
+  <!-- Invite page -->
+  <main class="invite-page">
+
+    <div class="invite-card" id="invite-card">
+      <div class="invite-card-accent"></div>
+
+      <div class="invite-card-body">
+
+        <!-- Brand -->
+        <div class="invite-brand">
+          <div class="invite-brand-mark">C</div>
+          <span class="invite-brand-name">Combriccola</span>
+        </div>
+
+        <!-- ── STATE: TOKEN SCADUTO ── -->
+        <div class="state-scaduto active" id="state-scaduto">
+          <div class="invite-state-icon error-expired">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 15 15"/>
+            </svg>
+          </div>
+
+          <h2 class="invite-heading">Link di invito scaduto</h2>
+          <p class="invite-subtext">Questo link è scaduto. Chiedi all'organizzatore del viaggio di generarne uno nuovo.</p>
+
+          <button class="invite-cta" onclick="void(0)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
+            </svg>
+            Accedi a Combriccola
+          </button>
+
+          <div class="invite-divider">
+            <div class="invite-divider-line"></div>
+            <span class="invite-divider-text">oppure</span>
+            <div class="invite-divider-line"></div>
+          </div>
+
+          <p class="invite-footer-link">Non hai un account? <span>Registrati gratuitamente</span></p>
+        </div>
+
+        <!-- ── STATE: TOKEN NON VALIDO ── -->
+        <div class="state-invalido" id="state-invalido">
+          <div class="invite-state-icon error-invalid">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="15" y1="9" x2="9" y2="15"/>
+              <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+          </div>
+
+          <h2 class="invite-heading">Link non valido</h2>
+          <p class="invite-subtext">Questo link non è riconosciuto. Verifica di averlo copiato correttamente o chiedi all'organizzatore un nuovo link.</p>
+
+          <button class="invite-cta" onclick="void(0)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
+            </svg>
+            Accedi a Combriccola
+          </button>
+
+          <div class="invite-divider">
+            <div class="invite-divider-line"></div>
+            <span class="invite-divider-text">oppure</span>
+            <div class="invite-divider-line"></div>
+          </div>
+
+          <p class="invite-footer-link">Non hai un account? <span>Registrati gratuitamente</span></p>
+        </div>
+
+        <!-- ── STATE: REDIRECT IN CORSO ── -->
+        <div class="state-loading" id="state-loading">
+          <div class="invite-state-icon loading">
+            <div class="spinner"></div>
+          </div>
+          <h2 class="invite-heading" style="margin-bottom:10px;">Accesso in corso…</h2>
+          <p class="invite-subtext">Vieni reindirizzato al viaggio.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Below-card tagline -->
+    <p class="invite-tagline">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      Combriccola non condivide mai i tuoi dati
+    </p>
+
+  </main>
+
+  <script>
+    const descriptions = {
+      scaduto: 'Link scaduto — errore con CTA al sign-in',
+      invalido: 'Link non valido — errore con CTA al sign-in',
+      loading:  'Redirect immediato — spinner minimale'
+    };
+
+    function setScenario(name, btn) {
+      document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('scenario-desc').textContent = descriptions[name];
+      document.querySelectorAll('.state-scaduto, .state-invalido, .state-loading').forEach(el => {
+        el.classList.remove('active');
+      });
+      document.getElementById('state-' + name).classList.add('active');
+      const card = document.getElementById('invite-card');
+      card.style.animation = 'none';
+      card.offsetHeight;
+      card.style.animation = '';
+    }
+  </script>
+
+</body>
+</html>

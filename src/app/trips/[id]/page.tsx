@@ -17,9 +17,17 @@ export default async function TripDashboardPage({ params }: Props) {
   const data = await getTripDashboard(id, user.id);
   if (!data) forbidden();
 
+  const todayLabel = new Date().toLocaleDateString("it-IT", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "Europe/Rome",
+  });
+
   return (
     <TripShell tripId={id} trip={data.trip} role={data.role} activeTab="overview">
-      <TripDashboard tripId={id} data={data} />
+      <TripDashboard tripId={id} data={data} todayLabel={todayLabel} />
     </TripShell>
   );
 }

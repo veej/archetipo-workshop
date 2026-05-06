@@ -17,12 +17,12 @@
 | EP-004 | Documenti di Viaggio | 3 | 7 | MVP |
 | EP-005 | Spese e Saldi | 3 | 9 | MVP |
 | EP-006 | Notifiche | 2 | 6 | MVP |
-| EP-007 | Debito Tecnico | 1 | 2 | POST-MVP |
+| EP-007 | Debito Tecnico | 1 | 3 | POST-MVP |
 
 **Totale storie:** 19
-**Totale story points:** 53
+**Totale story points:** 54
 **Storie MVP:** 18 (51pt)
-**Storie POST-MVP:** 1 (2pt)
+**Storie POST-MVP:** 1 (3pt)
 
 ---
 
@@ -210,7 +210,7 @@ After implementing this story, un partecipante può disattivarsi dal tab parteci
 
 #### US-007: Aggiunta tappa all'itinerario
 
-**Epic:** EP-003 | **Priority:** HIGH | **Story Points:** 3
+**Epic:** EP-003 | **Priority:** HIGH | **Story Points:** 3 | **Status:** REVIEW
 
 **Story**
 Come Marco (Coordinatore),
@@ -462,23 +462,24 @@ After implementing this story, qualsiasi utente autenticato può aprire un panne
 
 ---
 
-#### US-019: Raffinamenti UX — preview itinerario e validazione destinazione
+#### US-019: Raffinamenti UX — preview itinerario, validazione destinazione e navbar globale
 
-**Epic:** EP-007 | **Priority:** LOW | **Story Points:** 2 | **Status:** PLANNED
+**Epic:** EP-007 | **Priority:** LOW | **Story Points:** 3 | **Status:** PLANNED
 
 **Story**
 Come utente,
-voglio che la preview dell'itinerario mostri il primo giorno del viaggio (non la data odierna) e che il campo destinazione in creazione viaggio validi che il luogo esista,
-così da avere un'esperienza coerente e non inserire destinazioni inesistenti per errore.
+voglio che la preview dell'itinerario mostri il primo giorno del viaggio, che il campo destinazione validi il luogo, e che la navbar principale sia presente in tutte le pagine,
+così da avere un'esperienza coerente e navigabile in tutto il prodotto.
 
 **Demonstrates**
-After implementing this story, aprendo l'itinerario di un viaggio futuro si vede il primo giorno del viaggio anziché "oggi"; e compilando il form di creazione viaggio con una destinazione non valida si riceve un errore inline prima della submission.
+After implementing this story, aprendo l'itinerario di un viaggio futuro si vede il primo giorno del viaggio anziché "oggi"; compilando il form di creazione viaggio con una destinazione non valida si riceve un errore inline; la navbar principale è visibile e funzionante in ogni pagina dell'applicazione.
 
 **Acceptance Criteria**
-- [ ] Nella pagina itinerario (`/trips/[id]/itinerary`) e nel widget "Oggi" della dashboard, il giorno visualizzato di default è il primo giorno del viaggio, non la data corrente; se il viaggio è in corso, viene mostrato il giorno corrente come ora
+- [ ] Nella pagina itinerario (`/trips/[id]/itinerary`) e nel widget "Oggi" della dashboard, il giorno visualizzato di default è il primo giorno del viaggio, non la data corrente; se il viaggio è in corso, viene mostrato il giorno corrente
 - [ ] Il campo destinazione nel form di creazione viaggio valida il luogo inserito tramite un servizio di geocoding (es. Google Places API o OpenStreetMap Nominatim)
 - [ ] Se la destinazione non è riconosciuta come luogo valido, viene mostrato un errore inline che blocca la submission del form
 - [ ] Se la destinazione è valida, il form procede normalmente; la latenza della validazione non blocca la UX (debounce + spinner inline)
+- [ ] La navbar principale è presente e funzionante in tutte le pagine dell'applicazione (incluse le pagine di viaggio, itinerario, documenti, spese e partecipanti)
 
 ---
 

@@ -10,6 +10,7 @@ import type { DocumentCategory } from "@prisma/client";
 interface TripDashboardProps {
   tripId: string;
   data: TripDashboardData;
+  todayLabel: string;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -91,17 +92,10 @@ function SectionLink({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function TripDashboard({ tripId, data }: TripDashboardProps) {
+export function TripDashboard({ tripId, data, todayLabel }: TripDashboardProps) {
   const { todayStops, recentDocuments, balance } = data;
   const balanceInfo = getBalanceDisplayInfo(balance);
   const chipStyle = BALANCE_CHIP_STYLE[balanceInfo.variant];
-
-  const todayLabel = new Date().toLocaleDateString("it-IT", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
 
   return (
     <div

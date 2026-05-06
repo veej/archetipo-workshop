@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>US-007 — Combriccola: Itinerario Giornaliero</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    /* ───────── Design Tokens ───────── */
+    :root {
+      --th-primary:       #E55A4E;
+      --th-primary-hover: #C94A40;
+      --th-primary-soft:  #FCE9E6;
+      --th-primary-fg:    #FFFFFF;
+
+      --th-bg:            #FAFAF7;
+      --th-surface:       #FFFFFF;
+      --th-surface-2:     #F6F4F0;
+      --th-fg:            #1B1A19;
+      --th-fg-muted:      #6E6A66;
+      --th-fg-subtle:     #A09C97;
+      --th-border:        #E8E4DE;
+      --th-border-strong: #D8D2C8;
+      --th-ring:          rgba(229, 90, 78, 0.35);
+
+      --th-success:       #2F8A5F;
+      --th-success-soft:  #E5F2EC;
+      --th-warning:       #B8761E;
+      --th-warning-soft:  #FBF1DD;
+      --th-danger:        #C44A40;
+      --th-danger-soft:   #FCE9E6;
+      --th-info:          #2A6FDB;
+      --th-info-soft:     #E4EDFB;
+
+      --th-radius-sm: 6px;
+      --th-radius:    10px;
+      --th-radius-md: 12px;
+      --th-radius-lg: 16px;
+
+      --th-shadow-xs: 0 1px 2px rgba(20,16,12,0.04);
+      --th-shadow-sm: 0 1px 3px rgba(20,16,12,0.06), 0 1px 2px rgba(20,16,12,0.04);
+      --th-shadow-md: 0 4px 14px rgba(20,16,12,0.08), 0 2px 4px rgba(20,16,12,0.04);
+
+      --th-font-sans:    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --th-font-display: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    }
+
+    /* ───────── Base ───────── */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--th-bg); color: var(--th-fg); font-family: var(--th-font-sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    button { font-family: inherit; cursor: pointer; }
+    a { color: inherit; text-decoration: none; }
+    h1, h2, h3, h4 { font-family: var(--th-font-display); font-weight: 700; letter-spacing: -0.02em; margin: 0; color: var(--th-fg); }
+    p { margin: 0; }
+
+    /* ───────── Scenario bar ───────── */
+    .scenario-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      background: var(--th-fg);
+      padding: 10px 20px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .scenario-bar .label { color: rgba(255,255,255,0.6); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+    .scenario-btn { padding: 5px 14px; font-size: 12.5px; font-weight: 600; border-radius: 6px; border: 1.5px solid rgba(255,255,255,0.15); background: transparent; color: rgba(255,255,255,0.65); cursor: pointer; transition: all .12s; white-space: nowrap; }
+    .scenario-btn:hover { border-color: rgba(255,255,255,0.4); color: white; }
+    .scenario-btn.active { background: var(--th-primary); border-color: var(--th-primary); color: white; }
+    body { padding-top: 44px; }
+
+    /* ───────── App Header ───────── */
+    .th-header {
+      position: sticky; top: 44px; z-index: 40;
+      background: rgba(250,250,247,0.92);
+      backdrop-filter: blur(12px) saturate(150%);
+      border-bottom: 1px solid var(--th-border);
+    }
+    .th-header-row {
+      max-width: 1240px; margin: 0 auto;
+      padding: 14px 32px;
+      display: flex; align-items: center; gap: 24px;
+    }
+    .th-header-brand { display: flex; align-items: center; gap: 10px; font-family: var(--th-font-display); font-weight: 700; font-size: 17px; letter-spacing: -0.02em; }
+    .th-brand-mark { width: 30px; height: 30px; border-radius: 9px; background: var(--th-primary); color: white; display: grid; place-items: center; font-weight: 800; font-size: 14px; box-shadow: 0 6px 14px -4px rgba(229,90,78,0.55); }
+    .th-header-nav { display: flex; align-items: center; gap: 4px; margin-left: 8px; }
+    .th-header-nav-item { padding: 7px 12px; font-size: 13px; font-weight: 600; color: var(--th-fg-muted); border-radius: var(--th-radius-sm); border: none; background: transparent; cursor: pointer; transition: background .12s, color .12s; white-space: nowrap; }
+    .th-header-nav-item:hover { background: var(--th-surface-2); color: var(--th-fg); }
+    .th-header-nav-item.active { color: var(--th-fg); background: var(--th-surface-2); }
+    .th-header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .th-search { display: flex; align-items: center; gap: 8px; background: var(--th-surface); border: 1px solid var(--th-border); border-radius: var(--th-radius-sm); padding: 7px 11px; width: 240px; color: var(--th-fg-muted); }
+    .th-search input { border: none; outline: none; background: transparent; flex: 1; color: var(--th-fg); font-size: 13px; }
+    .th-search input::placeholder { color: var(--th-fg-subtle); }
+    .th-avatar { width: 32px; height: 32px; border-radius: 999px; display: grid; place-items: center; color: white; font-weight: 700; font-size: 11.5px; background: #D97757; }
+
+    /* ───────── Page Container ───────── */
+    .th-page { padding: 28px 32px 56px; max-width: 1240px; width: 100%; margin: 0 auto; }
+
+    /* ───────── Buttons ───────── */
+    .th-btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; border-radius: var(--th-radius-sm); border: 1px solid transparent; background: var(--th-surface); color: var(--th-fg); transition: background .12s, border-color .12s, color .12s; white-space: nowrap; }
+    .th-btn-primary { background: var(--th-primary); color: var(--th-primary-fg); border-color: var(--th-primary); }
+    .th-btn-primary:hover { background: var(--th-primary-hover); border-color: var(--th-primary-hover); }
+    .th-btn-outline { border-color: var(--th-border-strong); }
+    .th-btn-outline:hover { background: var(--th-surface-2); }
+    .th-btn-ghost { background: transparent; color: var(--th-fg-muted); border-color: var(--th-border); }
+    .th-btn-ghost:hover { background: var(--th-surface-2); color: var(--th-fg); }
+    .th-btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 6px; }
+
+    /* ───────── Badges ───────── */
+    .th-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; font-size: 11.5px; font-weight: 600; border-radius: 999px; background: var(--th-surface-2); color: var(--th-fg-muted); white-space: nowrap; }
+    .th-badge-info { background: var(--th-info-soft); color: var(--th-info); }
+
+    /* ═══════════════════════════════════════════════════════════
+       TRIP HERO
+    ══════════════════════════════════════════════════════════ */
+    .trip-hero {
+      display: flex; overflow: hidden;
+      background: var(--th-surface); border: 1px solid var(--th-border);
+      border-radius: var(--th-radius-lg); box-shadow: var(--th-shadow-xs);
+      min-height: 188px;
+    }
+    .trip-hero-cover { width: 256px; flex-shrink: 0; position: relative; overflow: hidden; }
+    .trip-hero-cover svg { width: 100%; height: 100%; display: block; object-fit: cover; }
+    .trip-hero-body {
+      flex: 1; padding: 20px 24px 18px;
+      display: flex; flex-direction: column; gap: 4px;
+      border-left: 1px solid var(--th-border);
+    }
+    .trip-hero-breadcrumb {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; color: var(--th-fg-muted); font-weight: 500; margin-bottom: 4px;
+      transition: color .12s;
+    }
+    .trip-hero-breadcrumb:hover { color: var(--th-fg); }
+    .trip-hero-name { font-size: 28px; line-height: 1.08; letter-spacing: -0.03em; }
+    .trip-hero-meta { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 6px; }
+    .trip-hero-meta-item { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--th-fg-muted); }
+    .trip-hero-footer { display: flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 14px; }
+
+    /* ═══════════════════════════════════════════════════════════
+       TRIP NAVIGATION
+    ══════════════════════════════════════════════════════════ */
+    .trip-nav-wrapper {
+      margin: 16px 0 24px;
+      background: var(--th-surface); border: 1px solid var(--th-border);
+      border-radius: var(--th-radius); box-shadow: var(--th-shadow-xs);
+      display: flex; align-items: stretch; overflow: hidden;
+    }
+    .trip-nav-item {
+      padding: 11px 18px; font-size: 13px; font-weight: 600;
+      color: var(--th-fg-muted); border: none; background: transparent;
+      cursor: pointer; position: relative; transition: color .12s; white-space: nowrap;
+    }
+    .trip-nav-item::after {
+      content: ''; position: absolute; bottom: 0; left: 14px; right: 14px;
+      height: 2px; border-radius: 2px 2px 0 0;
+      background: transparent; transition: background .12s;
+    }
+    .trip-nav-item:hover { color: var(--th-fg); }
+    .trip-nav-item:hover::after { background: var(--th-border-strong); }
+    .trip-nav-item.active { color: var(--th-primary-hover); }
+    .trip-nav-item.active::after { background: var(--th-primary); }
+
+    /* ═══════════════════════════════════════════════════════════
+       ITINERARY CONTENT AREA
+    ══════════════════════════════════════════════════════════ */
+
+    /* Content header row */
+    .itinerary-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .itinerary-title { font-size: 18px; letter-spacing: -0.025em; }
+    .itinerary-subtitle { margin-top: 3px; font-size: 12.5px; color: var(--th-fg-muted); font-weight: 500; }
+    .itinerary-actions { display: flex; align-items: center; gap: 10px; }
+
+    /* Two-column layout */
+    .itinerary-layout { display: flex; gap: 16px; align-items: flex-start; }
+
+    /* Days sidebar */
+    .days-sidebar { width: 200px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; }
+    .day-card {
+      padding: 13px 15px; border-radius: var(--th-radius);
+      border: 1px solid var(--th-border); background: var(--th-surface);
+      cursor: pointer; transition: border-color .12s, background .12s;
+      box-shadow: var(--th-shadow-xs);
+    }
+    .day-card:hover:not(.active) { border-color: var(--th-border-strong); background: var(--th-surface-2); }
+    .day-card.active { border-color: var(--th-primary); background: var(--th-primary-soft); }
+    .day-card-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
+      color: var(--th-fg-subtle); margin-bottom: 3px;
+    }
+    .day-card.active .day-card-label { color: var(--th-primary-hover); }
+    .day-card-date {
+      font-family: var(--th-font-display); font-size: 14.5px; font-weight: 700;
+      letter-spacing: -0.02em; color: var(--th-fg); margin-bottom: 3px;
+    }
+    .day-card-count { font-size: 11.5px; font-weight: 600; color: var(--th-fg-muted); }
+    .day-card.active .day-card-count { color: var(--th-primary-hover); }
+
+    /* Day content panel */
+    .day-panel {
+      flex: 1; min-width: 0;
+      background: var(--th-surface); border: 1px solid var(--th-border);
+      border-radius: var(--th-radius); box-shadow: var(--th-shadow-xs);
+      overflow: hidden;
+    }
+    .day-panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px 12px; border-bottom: 1px solid var(--th-border);
+    }
+    .day-panel-title { font-family: var(--th-font-display); font-size: 14.5px; font-weight: 700; letter-spacing: -0.02em; }
+    .day-panel-sub { font-size: 12px; color: var(--th-fg-muted); margin-top: 2px; font-weight: 500; }
+
+    /* Stops list */
+    .stops-list { padding: 6px 0; }
+    .stop-item {
+      display: flex; align-items: flex-start; gap: 0;
+      padding: 14px 18px;
+    }
+    .stop-item + .stop-item { border-top: 1px solid var(--th-border); }
+
+    .stop-time {
+      width: 52px; flex-shrink: 0;
+      display: flex; flex-direction: column; padding-top: 3px;
+    }
+    .stop-time-main { font-size: 13.5px; font-weight: 700; color: var(--th-fg); font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }
+    .stop-time-end { font-size: 11.5px; font-weight: 500; color: var(--th-fg-subtle); font-variant-numeric: tabular-nums; margin-top: 1px; }
+
+    .stop-connector {
+      width: 18px; flex-shrink: 0;
+      display: flex; flex-direction: column; align-items: center;
+      padding-top: 5px; margin: 0 4px;
+    }
+    .stop-connector-dot { width: 6px; height: 6px; border-radius: 999px; background: var(--th-border-strong); flex-shrink: 0; }
+    .stop-connector-line { width: 1.5px; flex: 1; background: var(--th-border); min-height: 24px; margin-top: 4px; }
+    .stop-item:last-child .stop-connector-line { display: none; }
+
+    .stop-icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      display: grid; place-items: center; flex-shrink: 0;
+      margin: 0 12px 0 2px;
+    }
+    .stop-icon.flight   { background: var(--th-info-soft);    color: var(--th-info); }
+    .stop-icon.hotel    { background: var(--th-primary-soft);  color: var(--th-primary-hover); }
+    .stop-icon.food     { background: var(--th-warning-soft);  color: var(--th-warning); }
+    .stop-icon.activity { background: var(--th-success-soft);  color: var(--th-success); }
+    .stop-icon.generic  { background: var(--th-surface-2);     color: var(--th-fg-muted); }
+
+    .stop-body { flex: 1; min-width: 0; padding-top: 2px; }
+    .stop-body-title { font-family: var(--th-font-display); font-size: 13.5px; font-weight: 700; letter-spacing: -0.01em; color: var(--th-fg); margin-bottom: 3px; }
+    .stop-body-sub { font-size: 12px; color: var(--th-fg-muted); margin-bottom: 5px; }
+    .stop-body-addr { display: flex; align-items: center; gap: 4px; font-size: 11.5px; color: var(--th-fg-muted); margin-bottom: 7px; }
+    .stop-body-notes {
+      font-size: 12px; color: var(--th-fg-muted);
+      background: var(--th-bg); border: 1px solid var(--th-border);
+      border-radius: var(--th-radius-sm); padding: 6px 10px; line-height: 1.45;
+    }
+
+    .stop-menu-btn {
+      flex-shrink: 0; margin-left: 10px;
+      width: 26px; height: 26px; border-radius: var(--th-radius-sm);
+      border: 1px solid transparent; background: transparent;
+      display: grid; place-items: center; color: var(--th-fg-subtle);
+      transition: all .12s; margin-top: 2px;
+    }
+    .stop-menu-btn:hover { background: var(--th-surface-2); border-color: var(--th-border); color: var(--th-fg-muted); }
+
+    /* Empty state */
+    .itinerary-empty {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 56px 32px; text-align: center;
+    }
+    .itinerary-empty-icon {
+      width: 52px; height: 52px; border-radius: var(--th-radius-md);
+      border: 2px dashed var(--th-border-strong);
+      display: grid; place-items: center; color: var(--th-fg-subtle); margin-bottom: 14px;
+    }
+    .itinerary-empty-title { font-size: 14px; font-weight: 700; font-family: var(--th-font-display); margin-bottom: 5px; }
+    .itinerary-empty-desc { font-size: 12.5px; color: var(--th-fg-muted); max-width: 260px; line-height: 1.5; margin-bottom: 18px; }
+
+    /* Read-only badge */
+    .readonly-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 10px; border-radius: var(--th-radius-sm);
+      font-size: 12px; font-weight: 600;
+      background: var(--th-surface-2); color: var(--th-fg-muted);
+      border: 1px solid var(--th-border);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(20,16,12,0.45); backdrop-filter: blur(3px);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal {
+      background: var(--th-surface); border-radius: var(--th-radius-lg);
+      box-shadow: 0 24px 64px rgba(20,16,12,0.16), 0 8px 24px rgba(20,16,12,0.08);
+      width: 100%; max-width: 480px; display: flex; flex-direction: column;
+    }
+    .modal-header { padding: 22px 24px 18px; border-bottom: 1px solid var(--th-border); }
+    .modal-title { font-size: 17px; font-weight: 700; letter-spacing: -0.025em; }
+    .modal-subtitle { font-size: 13px; color: var(--th-fg-muted); margin-top: 3px; }
+    .modal-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+    .modal-footer { padding: 16px 24px 20px; border-top: 1px solid var(--th-border); display: flex; justify-content: flex-end; gap: 10px; }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field label { font-size: 12.5px; font-weight: 600; color: var(--th-fg); }
+    .field label .req { color: var(--th-primary); margin-left: 2px; }
+    .field input, .field textarea {
+      padding: 8px 11px; font-size: 13.5px; font-family: var(--th-font-sans);
+      border: 1.5px solid var(--th-border); border-radius: var(--th-radius-sm);
+      background: var(--th-surface); color: var(--th-fg);
+      outline: none; transition: border-color .12s, box-shadow .12s;
+    }
+    .field input:focus, .field textarea:focus {
+      border-color: var(--th-primary);
+      box-shadow: 0 0 0 3px rgba(229,90,78,0.14);
+    }
+    .field input.error, .field textarea.error {
+      border-color: var(--th-primary-hover);
+      box-shadow: 0 0 0 3px rgba(196,74,64,0.12);
+    }
+    .field-error { font-size: 12px; color: var(--th-primary-hover); font-weight: 500; }
+    .field textarea { resize: vertical; min-height: 72px; }
+    .field-hint { font-size: 11.5px; color: var(--th-fg-subtle); }
+    .btn-cancel {
+      padding: 8px 16px; font-size: 13px; font-weight: 600;
+      border: 1.5px solid var(--th-border); border-radius: var(--th-radius-sm);
+      background: transparent; color: var(--th-fg-muted); transition: all .12s;
+    }
+    .btn-cancel:hover { background: var(--th-surface-2); color: var(--th-fg); }
+
+    /* Scenario visibility */
+    .scenario { display: none; }
+    .scenario.visible { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- Scenario bar -->
+<div class="scenario-bar">
+  <span class="label">US-007</span>
+  <button class="scenario-btn active" onclick="show(1)">1 · Con tappe (org.)</button>
+  <button class="scenario-btn" onclick="show(2)">2 · Modal pulito</button>
+  <button class="scenario-btn" onclick="show(3)">3 · Modal errori</button>
+  <button class="scenario-btn" onclick="show(4)">4 · Itinerario vuoto</button>
+  <button class="scenario-btn" onclick="show(5)">5 · Vista partecipante</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- APP SHELL (shared header)                                           -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<header class="th-header">
+  <div class="th-header-row">
+    <div class="th-header-brand">
+      <div class="th-brand-mark">C</div>
+      <span>Combriccola</span>
+    </div>
+    <nav class="th-header-nav">
+      <button class="th-header-nav-item active">I miei viaggi</button>
+      <button class="th-header-nav-item">Inviti</button>
+    </nav>
+    <div class="th-header-right">
+      <div class="th-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" placeholder="Cerca viaggio…" readonly/>
+      </div>
+      <div class="th-avatar" title="Marco Bianchi">MB</div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SCENARIO 1 — Itinerario con tappe (organizzatore)                  -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="scenario visible" id="s1">
+  <div class="th-page">
+
+    <!-- Trip Hero -->
+    <div class="trip-hero">
+      <div class="trip-hero-cover">
+        <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="sky1" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#F7D9C4"/>
+              <stop offset="1" stop-color="#E8A87C"/>
+            </linearGradient>
+          </defs>
+          <rect width="400" height="300" fill="url(#sky1)"/>
+          <!-- Sun -->
+          <circle cx="320" cy="70" r="30" fill="#F5A623" opacity="0.9"/>
+          <!-- Water/river -->
+          <rect x="0" y="210" width="400" height="90" fill="#6BAED6" opacity="0.6"/>
+          <rect x="0" y="225" width="400" height="75" fill="#4A90B8" opacity="0.5"/>
+          <!-- Buildings -->
+          <g fill="#4A4060">
+            <rect x="0" y="130" width="50" height="80"/>
+            <rect x="50" y="150" width="38" height="60"/>
+            <rect x="88" y="120" width="55" height="90"/>
+            <rect x="143" y="140" width="30" height="70"/>
+            <rect x="173" y="108" width="45" height="102"/>
+            <rect x="280" y="125" width="40" height="85"/>
+            <rect x="320" y="145" width="35" height="65"/>
+            <rect x="355" y="132" width="45" height="78"/>
+          </g>
+          <!-- Tower de Belém inspired -->
+          <g fill="#C8A882">
+            <rect x="218" y="88" width="24" height="122"/>
+            <rect x="212" y="155" width="36" height="55"/>
+            <rect x="208" y="175" width="44" height="35"/>
+          </g>
+          <rect x="214" y="84" width="12" height="8" fill="#C8A882"/>
+          <rect x="226" y="84" width="12" height="8" fill="#C8A882"/>
+          <!-- Reflections in water -->
+          <rect x="0" y="212" width="400" height="5" fill="rgba(255,255,255,0.15)"/>
+        </svg>
+      </div>
+      <div class="trip-hero-body">
+        <div class="trip-hero-breadcrumb">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
+          I miei viaggi
+        </div>
+        <h1 class="trip-hero-name">Lisbona 2026</h1>
+        <div class="trip-hero-meta">
+          <div class="trip-hero-meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>
+            Lisbona, Portogallo
+          </div>
+          <div class="trip-hero-meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            22–25 mag 2026
+          </div>
+          <div class="trip-hero-meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><circle cx="17" cy="8" r="3"/><path d="M22 19a5 5 0 0 0-5-5"/></svg>
+            6 partecipanti
+          </div>
+        </div>
+        <div class="trip-hero-footer">
+          <span class="th-badge th-badge-info">In arrivo</span>
+          <span style="margin-left: 4px; font-size: 12px; color: var(--th-fg-muted);">Tra 16 giorni</span>
+          <div style="margin-left: auto;">
+            <button class="th-btn th-btn-outline th-btn-sm">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              Modifica
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trip Navigation -->
+    <div class="trip-nav-wrapper">
+      <button class="trip-nav-item">Panoramica</button>
+      <button class="trip-nav-item active">Itinerario</button>
+      <button class="trip-nav-item">Documenti</button>
+      <button class="trip-nav-item">Spese</button>
+      <button class="trip-nav-item">Partecipanti</button>
+    </div>
+
+    <!-- Itinerary content -->
+    <div class="itinerary-header">
+      <div>
+        <h2 class="itinerary-title">Itinerario</h2>
+        <p class="itinerary-subtitle">4 giorni · 15 tappe</p>
+      </div>
+      <div class="itinerary-actions">
+        <button class="th-btn th-btn-outline">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Esporta PDF
+        </button>
+        <button class="th-btn th-btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nuova tappa
+        </button>
+      </div>
+    </div>
+
+    <div class="itinerary-layout">
+      <!-- Days sidebar -->
+      <aside class="days-sidebar">
+        <div class="day-card active">
+          <div class="day-card-label">Giorno 1</div>
+          <div class="day-card-date">Venerdì 22</div>
+          <div class="day-card-count">5 tappe</div>
+        </div>
+        <div class="day-card">
+          <div class="day-card-label">Giorno 2</div>
+          <div class="day-card-date">Sabato 23</div>
+          <div class="day-card-count">4 tappe</div>
+        </div>
+        <div class="day-card">
+          <div class="day-card-label">Giorno 3</div>
+          <div class="day-card-date">Domenica 24</div>
+          <div class="day-card-count">3 tappe</div>
+        </div>
+        <div class="day-card">
+          <div class="day-card-label">Giorno 4</div>
+          <div class="day-card-date">Lunedì 25</div>
+          <div class="day-card-count">3 tappe</div>
+        </div>
+      </aside>
+
+      <!-- Day panel -->
+      <section class="day-panel">
+        <div class="day-panel-header">
+          <div>
+            <div class="day-panel-title">Venerdì 22 maggio</div>
+            <div class="day-panel-sub">Giorno 1 di 4</div>
+          </div>
+          <button class="th-btn th-btn-ghost th-btn-sm">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Tappa
+          </button>
+        </div>
+
+        <div class="stops-list">
+          <!-- Stop 1: Volo -->
+          <div class="stop-item">
+            <div class="stop-time">
+              <span class="stop-time-main">07:30</span>
+              <span class="stop-time-end">09:50</span>
+            </div>
+            <div class="stop-connector"><div class="stop-connector-dot"></div><div class="stop-connector-line"></div></div>
+            <div class="stop-icon flight">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4c-1 0-1.5.5-3.5 2.5L11 8 2.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L6 12l-2 3H1l-1 1 3 2 2 3 1-1v-3l3-2 3.5 4.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+            </div>
+            <div class="stop-body">
+              <div class="stop-body-title">Volo FCO → LIS</div>
+              <div class="stop-body-sub">TAP Air TP831 · Terminal 1</div>
+              <div class="stop-body-addr">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>
+                Aeroporto Fiumicino
+              </div>
+              <div class="stop-body-notes">Check-in online aperto da giovedì sera</div>
+            </div>
+            <button class="stop-menu-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+          </div>
+
+          <!-- Stop 2: Hotel -->
+          <div class="stop-item">
+            <div class="stop-time"><span class="stop-time-main">11:00</span></div>
+            <div class="stop-connector"><div class="stop-connector-dot"></div><div class="stop-connector-line"></div></div>
+            <div class="stop-icon hotel">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <div class="stop-body">
+              <div class="stop-body-title">Check-in Hotel da Baixa</div>
+              <div class="stop-body-sub">Boutique 4★ · 3 camere doppie</div>
+              <div class="stop-body-addr">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>
+                Rua dos Fanqueiros 81, 1100-231 Lisboa
+              </div>
+              <div class="stop-body-notes">Reception sempre aperta. Codice prenotazione: BAIXA-LX-9821</div>
+            </div>
+            <button class="stop-menu-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+          </div>
+
+          <!-- Stop 3: Pranzo -->
+          <div class="stop-item">
+            <div class="stop-time"><span class="stop-time-main">13:30</span></div>
+            <div class="stop-connector"><div class="stop-connector-dot"></div><div class="stop-connector-line"></div></div>
+            <div class="stop-icon food">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+            </div>
+            <div class="stop-body">
+              <div class="stop-body-title">Pranzo a Time Out Market</div>
+              <div class="stop-body-sub">Mercado da Ribeira</div>
+              <div class="stop-body-addr">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>
+                Av. 24 de Julho 49, 1200-479 Lisboa
+              </div>
+            </div>
+            <button class="stop-menu-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+          </div>
+
+          <!-- Stop 4: Attività -->
+          <div class="stop-item">
+            <div class="stop-time"><span class="stop-time-main">16:00</span></div>
+            <div class="stop-connector"><div class="stop-connector-dot"></div><div class="stop-connector-line"></div></div>
+            <div class="stop-icon activity">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div class="stop-body">
+              <div class="stop-body-title">Tram 28 + Alfama</div>
+              <div class="stop-body-sub">Giro panoramico in tram storico</div>
+              <div class="stop-body-addr">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>
+                Praça Martim Moniz
+              </div>
+              <div class="stop-body-notes">Compriamo i biglietti giornalieri da 6€</div>
+            </div>
+            <button class="stop-menu-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+          </div>
+
+          <!-- Stop 5: Cena -->
+          <div class="stop-item">
+            <div class="stop-time"><span class="stop-time-main">20:30</span></div>
+            <div class="stop-connector"><div class="stop-connector-dot"></div><div class="stop-connector-line"></div></div>
+            <div class="stop-icon food">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+            </div>
+            <div class="stop-body">
+              <div class="stop-body-title">Cena al Cantinho do Avillez</div>
+              <div class="stop-body-sub">Prenotazione a nome Marco</div>
+              <div class="stop-body-addr">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>
+                Rua dos Duques de Bragança 7, Lisboa
+              </div>
+            </div>
+            <button class="stop-menu-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SCENARIO 2 — Modal aggiungi tappa (form pulito)                    -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="scenario" id="s2">
+  <div style="filter: blur(2px) brightness(0.97); pointer-events: none;">
+    <div class="th-page">
+      <!-- Trip Hero (blurred bg) -->
+      <div class="trip-hero" style="min-height:120px;">
+        <div class="trip-hero-cover" style="width:140px;">
+          <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7D9C4"/><stop offset="1" stop-color="#E8A87C"/></linearGradient></defs><rect width="400" height="300" fill="url(#sky2)"/><circle cx="320" cy="70" r="30" fill="#F5A623" opacity="0.9"/><rect x="0" y="210" width="400" height="90" fill="#6BAED6" opacity="0.6"/><g fill="#4A4060"><rect x="0" y="130" width="50" height="80"/><rect x="88" y="120" width="55" height="90"/><rect x="173" y="108" width="45" height="102"/></g></svg>
+        </div>
+        <div class="trip-hero-body"><h1 class="trip-hero-name" style="font-size:20px;">Lisbona 2026</h1></div>
+      </div>
+      <div class="trip-nav-wrapper" style="margin:12px 0 16px;">
+        <button class="trip-nav-item">Panoramica</button>
+        <button class="trip-nav-item active">Itinerario</button>
+        <button class="trip-nav-item">Documenti</button>
+        <button class="trip-nav-item">Spese</button>
+        <button class="trip-nav-item">Partecipanti</button>
+      </div>
+      <div class="itinerary-header">
+        <div><h2 class="itinerary-title">Itinerario</h2><p class="itinerary-subtitle">4 giorni · 15 tappe</p></div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal -->
+  <div class="modal-overlay" style="top:44px;">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Aggiungi tappa</div>
+        <div class="modal-subtitle">Lisbona 2026 · 22–25 maggio 2026</div>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label>Nome tappa<span class="req">*</span></label>
+          <input type="text" placeholder="es. Volo FCO → LIS, Check-in hotel…"/>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Giorno<span class="req">*</span></label>
+            <input type="date" min="2026-05-22" max="2026-05-25"/>
+            <span class="field-hint">Tra il 22 e 25 mag 2026</span>
+          </div>
+          <div class="field">
+            <label>Orario <span style="color:var(--th-fg-subtle);font-weight:500;">(opzionale)</span></label>
+            <input type="time"/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Indirizzo <span style="color:var(--th-fg-subtle);font-weight:500;">(opzionale)</span></label>
+          <input type="text" placeholder="es. Rua dos Fanqueiros 81, Lisboa"/>
+        </div>
+        <div class="field">
+          <label>Note <span style="color:var(--th-fg-subtle);font-weight:500;">(opzionale)</span></label>
+          <textarea placeholder="Dettagli utili per il gruppo…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel">Annulla</button>
+        <button class="th-btn th-btn-primary">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Aggiungi tappa
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SCENARIO 3 — Modal con errori di validazione                       -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="scenario" id="s3">
+  <div style="filter: blur(2px) brightness(0.97); pointer-events: none;">
+    <div class="th-page">
+      <div class="trip-hero" style="min-height:120px;">
+        <div class="trip-hero-cover" style="width:140px;"><svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sky3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7D9C4"/><stop offset="1" stop-color="#E8A87C"/></linearGradient></defs><rect width="400" height="300" fill="url(#sky3)"/><circle cx="320" cy="70" r="30" fill="#F5A623" opacity="0.9"/><g fill="#4A4060"><rect x="0" y="130" width="50" height="80"/><rect x="88" y="120" width="55" height="90"/></g></svg></div>
+        <div class="trip-hero-body"><h1 class="trip-hero-name" style="font-size:20px;">Lisbona 2026</h1></div>
+      </div>
+      <div class="trip-nav-wrapper" style="margin:12px 0 16px;">
+        <button class="trip-nav-item">Panoramica</button>
+        <button class="trip-nav-item active">Itinerario</button>
+        <button class="trip-nav-item">Documenti</button>
+        <button class="trip-nav-item">Spese</button>
+        <button class="trip-nav-item">Partecipanti</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" style="top:44px;">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Aggiungi tappa</div>
+        <div class="modal-subtitle" style="color: var(--th-primary-hover);">Correggi i campi evidenziati per continuare</div>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label>Nome tappa<span class="req">*</span></label>
+          <input type="text" class="error" placeholder="es. Volo FCO → LIS, Check-in hotel…"/>
+          <span class="field-error">Il nome della tappa è obbligatorio.</span>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Giorno<span class="req">*</span></label>
+            <input type="date" class="error" min="2026-05-22" max="2026-05-25"/>
+            <span class="field-error">Seleziona un giorno del viaggio.</span>
+          </div>
+          <div class="field">
+            <label>Orario <span style="color:var(--th-fg-subtle);font-weight:500;">(opzionale)</span></label>
+            <input type="time"/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Indirizzo <span style="color:var(--th-fg-subtle);font-weight:500;">(opzionale)</span></label>
+          <input type="text" placeholder="es. Rua dos Fanqueiros 81, Lisboa"/>
+        </div>
+        <div class="field">
+          <label>Note <span style="color:var(--th-fg-subtle);font-weight:500;">(opzionale)</span></label>
+          <textarea placeholder="Dettagli utili per il gruppo…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel">Annulla</button>
+        <button class="th-btn th-btn-primary">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Aggiungi tappa
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SCENARIO 4 — Itinerario vuoto                                      -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="scenario" id="s4">
+  <div class="th-page">
+    <div class="trip-hero">
+      <div class="trip-hero-cover">
+        <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sky4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7D9C4"/><stop offset="1" stop-color="#E8A87C"/></linearGradient></defs><rect width="400" height="300" fill="url(#sky4)"/><circle cx="320" cy="70" r="30" fill="#F5A623" opacity="0.9"/><rect x="0" y="210" width="400" height="90" fill="#6BAED6" opacity="0.6"/><g fill="#4A4060"><rect x="0" y="130" width="50" height="80"/><rect x="88" y="120" width="55" height="90"/><rect x="173" y="108" width="45" height="102"/></g></svg>
+      </div>
+      <div class="trip-hero-body">
+        <div class="trip-hero-breadcrumb"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>I miei viaggi</div>
+        <h1 class="trip-hero-name">Lisbona 2026</h1>
+        <div class="trip-hero-meta">
+          <div class="trip-hero-meta-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>Lisbona, Portogallo</div>
+          <div class="trip-hero-meta-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>22–25 mag 2026</div>
+        </div>
+        <div class="trip-hero-footer"><span class="th-badge th-badge-info">In arrivo</span></div>
+      </div>
+    </div>
+    <div class="trip-nav-wrapper">
+      <button class="trip-nav-item">Panoramica</button>
+      <button class="trip-nav-item active">Itinerario</button>
+      <button class="trip-nav-item">Documenti</button>
+      <button class="trip-nav-item">Spese</button>
+      <button class="trip-nav-item">Partecipanti</button>
+    </div>
+    <div class="itinerary-header">
+      <div><h2 class="itinerary-title">Itinerario</h2><p class="itinerary-subtitle">4 giorni · nessuna tappa ancora</p></div>
+      <div class="itinerary-actions">
+        <button class="th-btn th-btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nuova tappa
+        </button>
+      </div>
+    </div>
+    <div class="day-panel">
+      <div class="itinerary-empty">
+        <div class="itinerary-empty-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+        </div>
+        <div class="itinerary-empty-title">Nessuna tappa nell'itinerario</div>
+        <p class="itinerary-empty-desc">Inizia ad aggiungere tappe per costruire il piano del viaggio giorno per giorno.</p>
+        <button class="th-btn th-btn-primary">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Aggiungi la prima tappa
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SCENARIO 5 — Vista partecipante (sola lettura)                     -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="scenario" id="s5">
+  <div class="th-page">
+    <div class="trip-hero">
+      <div class="trip-hero-cover">
+        <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sky5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7D9C4"/><stop offset="1" stop-color="#E8A87C"/></linearGradient></defs><rect width="400" height="300" fill="url(#sky5)"/><circle cx="320" cy="70" r="30" fill="#F5A623" opacity="0.9"/><rect x="0" y="210" width="400" height="90" fill="#6BAED6" opacity="0.6"/><g fill="#4A4060"><rect x="0" y="130" width="50" height="80"/><rect x="88" y="120" width="55" height="90"/><rect x="173" y="108" width="45" height="102"/></g></svg>
+      </div>
+      <div class="trip-hero-body">
+        <div class="trip-hero-breadcrumb"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>I miei viaggi</div>
+        <h1 class="trip-hero-name">Lisbona 2026</h1>
+        <div class="trip-hero-meta">
+          <div class="trip-hero-meta-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>Lisbona, Portogallo</div>
+          <div class="trip-hero-meta-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>22–25 mag 2026</div>
+          <div class="trip-hero-meta-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><circle cx="17" cy="8" r="3"/><path d="M22 19a5 5 0 0 0-5-5"/></svg>6 partecipanti</div>
+        </div>
+        <div class="trip-hero-footer"><span class="th-badge th-badge-info">In arrivo</span></div>
+      </div>
+    </div>
+    <div class="trip-nav-wrapper">
+      <button class="trip-nav-item">Panoramica</button>
+      <button class="trip-nav-item active">Itinerario</button>
+      <button class="trip-nav-item">Documenti</button>
+      <button class="trip-nav-item">Spese</button>
+      <button class="trip-nav-item">Partecipanti</button>
+    </div>
+    <div class="itinerary-header">
+      <div><h2 class="itinerary-title">Itinerario</h2><p class="itinerary-subtitle">4 giorni · 15 tappe</p></div>
+      <span class="readonly-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Sola lettura
+      </span>
+    </div>
+    <div class="itinerary-layout">
+      <aside class="days-sidebar">
+        <div class="day-card active"><div class="day-card-label">Giorno 1</div><div class="day-card-date">Venerdì 22</div><div class="day-card-count">5 tappe</div></div>
+        <div class="day-card"><div class="day-card-label">Giorno 2</div><div class="day-card-date">Sabato 23</div><div class="day-card-count">4 tappe</div></div>
+        <div class="day-card"><div class="day-card-label">Giorno 3</div><div class="day-card-date">Domenica 24</div><div class="day-card-count">3 tappe</div></div>
+        <div class="day-card"><div class="day-card-label">Giorno 4</div><div class="day-card-date">Lunedì 25</div><div class="day-card-count">3 tappe</div></div>
+      </aside>
+      <section class="day-panel">
+        <div class="day-panel-header">
+          <div><div class="day-panel-title">Venerdì 22 maggio</div><div class="day-panel-sub">Giorno 1 di 4</div></div>
+          <!-- No add button for participants -->
+        </div>
+        <div class="stops-list">
+          <div class="stop-item">
+            <div class="stop-time"><span class="stop-time-main">07:30</span><span class="stop-time-end">09:50</span></div>
+            <div class="stop-connector"><div class="stop-connector-dot"></div><div class="stop-connector-line"></div></div>
+            <div class="stop-icon flight"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4c-1 0-1.5.5-3.5 2.5L11 8 2.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L6 12l-2 3H1l-1 1 3 2 2 3 1-1v-3l3-2 3.5 4.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></div>
+            <div class="stop-body"><div class="stop-body-title">Volo FCO → LIS</div><div class="stop-body-sub">TAP Air TP831 · Terminal 1</div><div class="stop-body-addr"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>Aeroporto Fiumicino</div><div class="stop-body-notes">Check-in online aperto da giovedì sera</div></div>
+          </div>
+          <div class="stop-item">
+            <div class="stop-time"><span class="stop-time-main">11:00</span></div>
+            <div class="stop-connector"><div class="stop-connector-dot"></div><div class="stop-connector-line"></div></div>
+            <div class="stop-icon hotel"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+            <div class="stop-body"><div class="stop-body-title">Check-in Hotel da Baixa</div><div class="stop-body-sub">Boutique 4★ · 3 camere doppie</div><div class="stop-body-addr"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>Rua dos Fanqueiros 81, Lisboa</div><div class="stop-body-notes">Codice prenotazione: BAIXA-LX-9821</div></div>
+          </div>
+          <div class="stop-item">
+            <div class="stop-time"><span class="stop-time-main">13:30</span></div>
+            <div class="stop-connector"><div class="stop-connector-dot"></div><div class="stop-connector-line"></div></div>
+            <div class="stop-icon food"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></div>
+            <div class="stop-body"><div class="stop-body-title">Pranzo a Time Out Market</div><div class="stop-body-sub">Mercado da Ribeira</div><div class="stop-body-addr"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>Av. 24 de Julho 49, Lisboa</div></div>
+          </div>
+          <div class="stop-item">
+            <div class="stop-time"><span class="stop-time-main">16:00</span></div>
+            <div class="stop-connector"><div class="stop-connector-dot"></div><div class="stop-connector-line"></div></div>
+            <div class="stop-icon activity"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg></div>
+            <div class="stop-body"><div class="stop-body-title">Tram 28 + Alfama</div><div class="stop-body-sub">Giro panoramico in tram storico</div><div class="stop-body-addr"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>Praça Martim Moniz</div><div class="stop-body-notes">Compriamo i biglietti giornalieri da 6€</div></div>
+          </div>
+          <div class="stop-item">
+            <div class="stop-time"><span class="stop-time-main">20:30</span></div>
+            <div class="stop-connector"><div class="stop-connector-dot"></div><div class="stop-connector-line"></div></div>
+            <div class="stop-icon food"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></div>
+            <div class="stop-body"><div class="stop-body-title">Cena al Cantinho do Avillez</div><div class="stop-body-sub">Prenotazione a nome Marco</div><div class="stop-body-addr"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>Rua dos Duques de Bragança 7, Lisboa</div></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  function show(n) {
+    document.querySelectorAll('.scenario').forEach(el => el.classList.remove('visible'));
+    document.querySelectorAll('.scenario-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('s' + n).classList.add('visible');
+    document.querySelectorAll('.scenario-btn')[n - 1].classList.add('active');
+  }
+</script>
+</body>
+</html>

@@ -17,10 +17,12 @@
 | EP-004 | Documenti di Viaggio | 3 | 7 | MVP |
 | EP-005 | Spese e Saldi | 3 | 9 | MVP |
 | EP-006 | Notifiche | 2 | 6 | MVP |
+| EP-007 | Debito Tecnico | 1 | 2 | POST-MVP |
 
-**Totale storie:** 18
-**Totale story points:** 51
+**Totale storie:** 19
+**Totale story points:** 53
 **Storie MVP:** 18 (51pt)
+**Storie POST-MVP:** 1 (2pt)
 
 ---
 
@@ -67,7 +69,7 @@ After implementing this story, Marco può compilare un form di creazione e veder
 
 #### US-002: Lista viaggi dell'utente
 
-**Epic:** EP-001 | **Priority:** HIGH | **Story Points:** 2 | **Status:** REVIEW
+**Epic:** EP-001 | **Priority:** HIGH | **Story Points:** 2 | **Status:** DONE
 
 **Story**
 Come Marco o Sara,
@@ -88,7 +90,7 @@ After implementing this story, qualsiasi utente autenticato può vedere la lista
 
 #### US-003: Dashboard di sintesi del viaggio
 
-**Epic:** EP-001 | **Priority:** HIGH | **Story Points:** 5 | **Status:** REVIEW
+**Epic:** EP-001 | **Priority:** HIGH | **Story Points:** 5 | **Status:** DONE
 
 **Story**
 Come Sara (Partecipante),
@@ -116,7 +118,7 @@ After implementing this story, qualsiasi partecipante del viaggio può aprire la
 
 #### US-004: Link di invito al viaggio
 
-**Epic:** EP-002 | **Priority:** HIGH | **Story Points:** 5 | **Status:** REVIEW
+**Epic:** EP-002 | **Priority:** HIGH | **Story Points:** 5 | **Status:** DONE
 
 **Story**
 Come Marco (Coordinatore),
@@ -137,7 +139,7 @@ After implementing this story, un organizzatore può generare un link di invito 
 
 #### US-005: Accettazione invito e ingresso nel viaggio
 
-**Epic:** EP-002 | **Priority:** HIGH | **Story Points:** 3 | **Status:** PLANNED
+**Epic:** EP-002 | **Priority:** HIGH | **Story Points:** 3 | **Status:** REVIEW
 
 **Extends existing boilerplate: OAuth callback handler**
 
@@ -453,6 +455,33 @@ After implementing this story, qualsiasi utente autenticato può aprire un panne
 
 ---
 
+### EP-007: Debito Tecnico
+
+> Raffinamenti UX e di robustezza emersi durante le code review delle storie MVP. Da implementare a valle di tutte le storie MVP.
+> **Scope:** POST-MVP | **Storie:** 1 | **Story Points:** 2
+
+---
+
+#### US-019: Raffinamenti UX — preview itinerario e validazione destinazione
+
+**Epic:** EP-007 | **Priority:** LOW | **Story Points:** 2 | **Status:** PLANNED
+
+**Story**
+Come utente,
+voglio che la preview dell'itinerario mostri il primo giorno del viaggio (non la data odierna) e che il campo destinazione in creazione viaggio validi che il luogo esista,
+così da avere un'esperienza coerente e non inserire destinazioni inesistenti per errore.
+
+**Demonstrates**
+After implementing this story, aprendo l'itinerario di un viaggio futuro si vede il primo giorno del viaggio anziché "oggi"; e compilando il form di creazione viaggio con una destinazione non valida si riceve un errore inline prima della submission.
+
+**Acceptance Criteria**
+- [ ] Nella pagina itinerario (`/trips/[id]/itinerary`) e nel widget "Oggi" della dashboard, il giorno visualizzato di default è il primo giorno del viaggio, non la data corrente; se il viaggio è in corso, viene mostrato il giorno corrente come ora
+- [ ] Il campo destinazione nel form di creazione viaggio valida il luogo inserito tramite un servizio di geocoding (es. Google Places API o OpenStreetMap Nominatim)
+- [ ] Se la destinazione non è riconosciuta come luogo valido, viene mostrato un errore inline che blocca la submission del form
+- [ ] Se la destinazione è valida, il form procede normalmente; la latenza della validazione non blocca la UX (debounce + spinner inline)
+
+---
+
 ## Assunzioni e Domande Aperte
 
 > _Assunzioni prese durante la generazione del backlog e domande lasciate aperte al team._
@@ -469,4 +498,4 @@ After implementing this story, qualsiasi utente autenticato può aprire un panne
 ---
 
 _Backlog generato via Archetipo Spec Skill — 2026-05-06_
-_18 storie su 6 epiche — 51 story points totali_
+_19 storie su 7 epiche — 53 story points totali_

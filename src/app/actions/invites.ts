@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 
@@ -51,4 +52,62 @@ export async function generateInviteLink(tripId: string): Promise<InviteResult> 
   });
 
   return { success: true, token, expiresAt };
+}
+
+type JoinTripResult =
+  | { success: true; tripId: string }
+  | { success: false; error: string };
+
+export async function joinTripByInvite(token: string): Promise<JoinTripResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Non autenticato." };
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseId: user.id },
+    select: { id: true },
+  });
+
+  if (!dbUser) {
+    return { success: false, error: "Utente non trovato nel database." };
+  }
+
+  const invite = await prisma.tripInvite.findUnique({
+    where: { token },
+  });
+
+  if (!invite) {
+    return { success: false, error: "Token non valido." };
+  }
+
+  if (invite.expiresAt <= new Date()) {
+    return { success: false, error: "Invito scaduto." };
+  }
+
+  const existingParticipant = await prisma.tripParticipant.findUnique({
+    where: { tripId_userId: { tripId: invite.tripId, userId: dbUser.id } },
+  });
+
+  if (existingParticipant) {
+    return { success: true, tripId: invite.tripId };
+  }
+
+  await prisma.tripParticipant.create({
+    data: {
+      tripId: invite.tripId,
+      userId: dbUser.id,
+      role: "PARTICIPANT",
+      status: "ACTIVE",
+    },
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath(`/trips/${invite.tripId}`);
+
+  return { success: true, tripId: invite.tripId };
 }

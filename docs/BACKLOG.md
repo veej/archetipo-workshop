@@ -46,7 +46,7 @@
 
 #### US-001: Creazione viaggio
 
-**Epic:** EP-001 | **Priority:** HIGH | **Story Points:** 3 | **Status:** PLANNED
+**Epic:** EP-001 | **Priority:** HIGH | **Story Points:** 3 | **Status:** REVIEW
 
 **Story**
 Come Marco (Coordinatore),
@@ -67,7 +67,7 @@ After implementing this story, Marco può compilare un form di creazione e veder
 
 #### US-002: Lista viaggi dell'utente
 
-**Epic:** EP-001 | **Priority:** HIGH | **Story Points:** 2
+**Epic:** EP-001 | **Priority:** HIGH | **Story Points:** 2 | **Status:** PLANNED
 
 **Story**
 Come Marco o Sara,

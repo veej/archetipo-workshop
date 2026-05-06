@@ -8,13 +8,52 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(uuid())
-  supabaseId String   @unique
-  email      String   @unique
-  name       String?
-  image      String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id           String           @id @default(uuid())
+  supabaseId   String           @unique
+  email        String           @unique
+  name         String?
+  image        String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  trips        TripParticipant[]
 
   @@map("users")
+}
+
+model Trip {
+  id          String           @id @default(uuid())
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  destination String
+  coverKey    String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  participants TripParticipant[]
+
+  @@map("trips")
+}
+
+model TripParticipant {
+  id        String            @id @default(uuid())
+  tripId    String
+  userId    String
+  role      TripRole          @default(PARTICIPANT)
+  status    ParticipantStatus @default(ACTIVE)
+  createdAt DateTime          @default(now())
+  trip      Trip              @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tripId, userId])
+  @@map("trip_participants")
+}
+
+enum TripRole {
+  ORGANIZER
+  PARTICIPANT
+}
+
+enum ParticipantStatus {
+  ACTIVE
+  DEACTIVATED
 }

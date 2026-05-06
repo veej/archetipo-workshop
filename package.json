@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "archetipo": "node .archetipo/cli/archetipo.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "test:cli": "node --test .archetipo/cli/archetipo.test.mjs",
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -38,6 +40,7 @@
     "eslint-config-next": "^15.3.3",
     "prisma": "^6.5.0",
     "tailwindcss": "^4.1.4",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.5"
   }
 }

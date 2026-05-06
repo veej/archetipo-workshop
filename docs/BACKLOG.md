@@ -67,7 +67,7 @@ After implementing this story, Marco può compilare un form di creazione e veder
 
 #### US-002: Lista viaggi dell'utente
 
-**Epic:** EP-001 | **Priority:** HIGH | **Story Points:** 2 | **Status:** PLANNED
+**Epic:** EP-001 | **Priority:** HIGH | **Story Points:** 2 | **Status:** REVIEW
 
 **Story**
 Come Marco o Sara,
@@ -88,7 +88,7 @@ After implementing this story, qualsiasi utente autenticato può vedere la lista
 
 #### US-003: Dashboard di sintesi del viaggio
 
-**Epic:** EP-001 | **Priority:** HIGH | **Story Points:** 5
+**Epic:** EP-001 | **Priority:** HIGH | **Story Points:** 5 | **Status:** PLANNED
 
 **Story**
 Come Sara (Partecipante),

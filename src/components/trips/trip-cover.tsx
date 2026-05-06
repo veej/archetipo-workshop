@@ -7,6 +7,7 @@ import {
 
 interface TripCoverProps {
   coverKey: string | null;
+  height?: number;
 }
 
 function PlaceholderSvg() {
@@ -38,7 +39,7 @@ function PlaceholderSvg() {
   );
 }
 
-export function TripCover({ coverKey }: TripCoverProps) {
+export function TripCover({ coverKey, height = 168 }: TripCoverProps) {
   const isValidKey = (key: string | null): key is CoverKey =>
     key !== null && (COVER_KEYS as readonly string[]).includes(key);
 
@@ -46,7 +47,7 @@ export function TripCover({ coverKey }: TripCoverProps) {
     <div
       style={{
         width: "100%",
-        height: 168,
+        height,
         overflow: "hidden",
         display: "block",
         position: "relative",

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { TripCover } from "./trip-cover";
 import { CreateTripModal } from "./create-trip-modal";
+import { TripCard } from "./trip-card";
+import { getTripStatus } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -14,7 +15,17 @@ export interface TripData {
   destination: string;
   coverKey: string | null;
   participantCount: number;
+  role: "ORGANIZER" | "PARTICIPANT";
 }
+
+type TabKey = "all" | "ongoing" | "upcoming" | "past";
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: "all", label: "Tutti" },
+  { key: "ongoing", label: "In corso" },
+  { key: "upcoming", label: "Prossimi" },
+  { key: "past", label: "Passati" },
+];
 
 interface TripsDashboardProps {
   trips: TripData[];
@@ -35,222 +46,101 @@ function getInitials(name: string | null, email: string): string {
   return email.slice(0, 2).toUpperCase();
 }
 
-function formatDateRange(start: Date, end: Date): string {
-  const startDay = start.toLocaleDateString("it-IT", { day: "numeric" });
-  const endFull = end.toLocaleDateString("it-IT", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-  // Show "12–22 ott 2026"
-  return `${startDay}–${endFull}`;
-}
+// ─── Avatar Dropdown ──────────────────────────────────────────────────────────
 
-type BadgeVariant = "default" | "primary" | "info";
-
-interface TripBadge {
-  label: string;
-  variant: BadgeVariant;
-}
-
-function getTripBadge(startDate: Date, endDate: Date): TripBadge {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const start = new Date(startDate);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(endDate);
-  end.setHours(0, 0, 0, 0);
-
-  if (end < today) {
-    return { label: "Concluso", variant: "default" };
-  }
-  if (start <= today && today <= end) {
-    return { label: "In corso", variant: "primary" };
-  }
-  const daysUntil = Math.ceil(
-    (start.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-  );
-  if (daysUntil <= 30) {
-    return { label: `Tra ${daysUntil} giorni`, variant: "primary" };
-  }
-  return { label: "In arrivo", variant: "info" };
-}
-
-// ─── Badge Component ──────────────────────────────────────────────────────────
-
-function Badge({ label, variant }: TripBadge) {
-  const styles: React.CSSProperties = {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 5,
-    padding: "3px 8px",
-    fontSize: 11.5,
-    fontWeight: 600,
-    borderRadius: 999,
-    whiteSpace: "nowrap",
-    flexShrink: 0,
-  };
-
-  if (variant === "primary") {
-    return (
-      <span
-        style={{
-          ...styles,
-          background: "#FCE9E6",
-          color: "#C94A40",
-          border: "1px solid transparent",
-        }}
-      >
-        {label}
-      </span>
-    );
-  }
-  if (variant === "info") {
-    return (
-      <span
-        style={{
-          ...styles,
-          background: "#E4EDFB",
-          color: "#2A6FDB",
-          border: "1px solid transparent",
-        }}
-      >
-        {label}
-      </span>
-    );
-  }
-  // default
-  return (
-    <span
-      style={{
-        ...styles,
-        background: "#F6F4F0",
-        color: "#6E6A66",
-        border: "1px solid #E8E4DE",
-      }}
-    >
-      {label}
-    </span>
-  );
-}
-
-// ─── Trip Card ────────────────────────────────────────────────────────────────
-
-function TripCard({ trip }: { trip: TripData }) {
-  const [hovered, setHovered] = useState(false);
-  const badge = getTripBadge(trip.startDate, trip.endDate);
-  const dateLabel = formatDateRange(trip.startDate, trip.endDate);
+function AvatarDropdown({ initials }: { initials: string }) {
+  const [open, setOpen] = useState(false);
 
   return (
-    <div
-      style={{
-        background: "#FFFFFF",
-        border: "1px solid #E8E4DE",
-        borderRadius: 10,
-        boxShadow: hovered
-          ? "0 4px 14px rgba(20, 16, 12, 0.08), 0 2px 4px rgba(20, 16, 12, 0.04)"
-          : "0 1px 2px rgba(20, 16, 12, 0.04)",
-        transform: hovered ? "translateY(-1px)" : "translateY(0)",
-        transition: "box-shadow .15s, transform .15s",
-        overflow: "hidden",
-        cursor: "pointer",
-      }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <TripCover coverKey={trip.coverKey} />
-      <div style={{ padding: "14px 16px 16px" }}>
-        {/* Name + badge row */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-            gap: 10,
-          }}
-        >
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div
-              style={{
-                fontWeight: 700,
-                fontSize: 15,
-                fontFamily:
-                  "'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                color: "#1B1A19",
-              }}
-            >
-              {trip.name}
-            </div>
-            <div
-              style={{
-                color: "#6E6A66",
-                fontSize: 12.5,
-                marginTop: 3,
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-              }}
-            >
-              <svg
-                width="11"
-                height="11"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              {trip.destination}
-            </div>
-          </div>
-          <Badge label={badge.label} variant={badge.variant} />
-        </div>
+    <div style={{ position: "relative" }}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          width: 32,
+          height: 32,
+          borderRadius: 999,
+          display: "grid",
+          placeItems: "center",
+          color: "white",
+          fontWeight: 700,
+          fontSize: 11.5,
+          background: "#D97757",
+          border: "none",
+          cursor: "pointer",
+          flexShrink: 0,
+        }}
+        aria-label="Menu utente"
+      >
+        {initials}
+      </button>
 
-        {/* Meta row: dates + participants */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginTop: 14,
-          }}
-        >
-          <div style={{ fontSize: 12.5, color: "#6E6A66" }}>{dateLabel}</div>
+      {open && (
+        <>
+          <div
+            style={{ position: "fixed", inset: 0, zIndex: 49 }}
+            onClick={() => setOpen(false)}
+          />
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 5,
-              color: "#6E6A66",
-              fontSize: 12,
+              position: "absolute",
+              top: "calc(100% + 8px)",
+              right: 0,
+              background: "#FFFFFF",
+              border: "1px solid #E8E4DE",
+              borderRadius: 10,
+              boxShadow:
+                "0 4px 14px rgba(20, 16, 12, 0.08), 0 2px 4px rgba(20, 16, 12, 0.04)",
+              minWidth: 160,
+              overflow: "hidden",
+              zIndex: 50,
             }}
           >
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="9" cy="8" r="4" />
-              <path d="M2 21a7 7 0 0 1 14 0" />
-              <circle cx="17" cy="8" r="3" />
-              <path d="M22 19a5 5 0 0 0-5-5" />
-            </svg>
-            {trip.participantCount}
+            <form action="/auth/signout" method="post">
+              <button
+                type="submit"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  width: "100%",
+                  padding: "10px 14px",
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: "#C44A40",
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  fontFamily: "inherit",
+                  transition: "background .12s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = "#FCE9E6";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                }}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                Esci
+              </button>
+            </form>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }
@@ -273,26 +163,41 @@ function EmptyState({ onNewTrip }: { onNewTrip: () => void }) {
         background: "#FFFFFF",
       }}
     >
-      <div style={{ color: "#A09C97", marginBottom: 16 }}>
+      <div style={{ color: "#A09C97", marginBottom: 24 }}>
         <svg
-          width="48"
-          height="48"
-          viewBox="0 0 24 24"
+          width="160"
+          height="140"
+          viewBox="0 0 160 140"
           fill="none"
-          stroke="currentColor"
-          strokeWidth="1.3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          <circle cx="12" cy="12" r="9" />
-          <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+          <circle cx="74" cy="82" r="46" fill="#F6F4F0" stroke="#E8E4DE" strokeWidth="2" />
+          <ellipse cx="74" cy="82" rx="46" ry="18" fill="none" stroke="#D8D2C8" strokeWidth="1.5" strokeDasharray="3 3" />
+          <ellipse cx="74" cy="82" rx="30" ry="46" fill="none" stroke="#D8D2C8" strokeWidth="1.5" strokeDasharray="3 3" />
+          <line x1="74" y1="36" x2="74" y2="128" stroke="#D8D2C8" strokeWidth="1.5" strokeDasharray="3 3" />
+          <line x1="28" y1="82" x2="120" y2="82" stroke="#D8D2C8" strokeWidth="1.5" strokeDasharray="3 3" />
+          <path d="M52 66 Q58 56 68 58 Q76 60 74 70 Q72 78 62 76 Q50 74 52 66Z" fill="#E55A4E" opacity="0.75" />
+          <path d="M80 72 Q88 68 94 74 Q98 82 90 86 Q82 88 80 80 Q78 74 80 72Z" fill="#E55A4E" opacity="0.55" />
+          <path d="M56 88 Q64 84 70 90 Q72 98 64 98 Q56 98 56 88Z" fill="#E55A4E" opacity="0.45" />
+          <circle cx="74" cy="82" r="46" fill="none" stroke="#C8C2BA" strokeWidth="2" />
+          <ellipse cx="74" cy="130" rx="22" ry="5" fill="#E8E4DE" />
+          <rect x="70" y="125" width="8" height="6" rx="2" fill="#D8D2C8" />
+          <g transform="translate(96 14) rotate(28)">
+            <path d="M0 12 L32 0 L20 22 Z" fill="#E55A4E" />
+            <path d="M0 12 L32 0 L16 16 Z" fill="#C94A40" />
+            <line x1="16" y1="16" x2="20" y2="22" stroke="#FFFFFF" strokeWidth="1" opacity="0.6" />
+          </g>
+          <path d="M114 30 Q100 18 86 28 Q72 38 80 52" stroke="#E55A4E" strokeWidth="1.5" strokeDasharray="4 4" fill="none" opacity="0.5" />
+          <circle cx="130" cy="52" r="2.5" fill="#E55A4E" opacity="0.6" />
+          <circle cx="38" cy="40" r="2" fill="#B8761E" opacity="0.5" />
+          <circle cx="22" cy="70" r="1.5" fill="#A09C97" opacity="0.55" />
+          <circle cx="140" cy="78" r="2" fill="#2A6FDB" opacity="0.4" />
         </svg>
       </div>
       <h3
         style={{
           fontSize: 17,
-          fontFamily:
-            "'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif",
+          fontFamily: "'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif",
           fontWeight: 700,
           letterSpacing: "-0.02em",
           color: "#1B1A19",
@@ -300,18 +205,10 @@ function EmptyState({ onNewTrip }: { onNewTrip: () => void }) {
           marginBottom: 8,
         }}
       >
-        Nessun viaggio ancora
+        Non hai ancora nessun viaggio
       </h3>
-      <p
-        style={{
-          fontSize: 13.5,
-          maxWidth: 320,
-          color: "#6E6A66",
-          marginBottom: 20,
-        }}
-      >
-        Crea il tuo primo viaggio e invita il gruppo — ci vogliono meno di due
-        minuti.
+      <p style={{ fontSize: 13.5, maxWidth: 340, color: "#6E6A66", marginBottom: 24, lineHeight: 1.6 }}>
+        Crea il tuo primo viaggio e invita il gruppo — ci vogliono meno di due minuti.
       </p>
       <button
         onClick={onNewTrip}
@@ -355,124 +252,23 @@ function EmptyState({ onNewTrip }: { onNewTrip: () => void }) {
   );
 }
 
-// ─── Avatar Dropdown ──────────────────────────────────────────────────────────
-
-function AvatarDropdown({ initials }: { initials: string }) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div style={{ position: "relative" }}>
-      <button
-        onClick={() => setOpen((v) => !v)}
-        style={{
-          width: 32,
-          height: 32,
-          borderRadius: 999,
-          display: "grid",
-          placeItems: "center",
-          color: "white",
-          fontWeight: 700,
-          fontSize: 11.5,
-          background: "#D97757",
-          border: "none",
-          cursor: "pointer",
-          flexShrink: 0,
-        }}
-        aria-label="Menu utente"
-      >
-        {initials}
-      </button>
-
-      {open && (
-        <>
-          {/* Backdrop to close */}
-          <div
-            style={{
-              position: "fixed",
-              inset: 0,
-              zIndex: 49,
-            }}
-            onClick={() => setOpen(false)}
-          />
-          <div
-            style={{
-              position: "absolute",
-              top: "calc(100% + 8px)",
-              right: 0,
-              background: "#FFFFFF",
-              border: "1px solid #E8E4DE",
-              borderRadius: 10,
-              boxShadow:
-                "0 4px 14px rgba(20, 16, 12, 0.08), 0 2px 4px rgba(20, 16, 12, 0.04)",
-              minWidth: 160,
-              overflow: "hidden",
-              zIndex: 50,
-            }}
-          >
-            <form action="/auth/signout" method="post">
-              <button
-                type="submit"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  width: "100%",
-                  padding: "10px 14px",
-                  fontSize: 13,
-                  fontWeight: 500,
-                  color: "#C44A40",
-                  background: "transparent",
-                  border: "none",
-                  cursor: "pointer",
-                  textAlign: "left",
-                  fontFamily: "inherit",
-                  transition: "background .12s",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background =
-                    "#FCE9E6";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background =
-                    "transparent";
-                }}
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                  <polyline points="16 17 21 12 16 7" />
-                  <line x1="21" y1="12" x2="9" y2="12" />
-                </svg>
-                Esci
-              </button>
-            </form>
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function TripsDashboard({ trips, user }: TripsDashboardProps) {
   const [modalOpen, setModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabKey>("all");
   const initials = getInitials(user.name, user.email);
+
+  const filteredTrips =
+    activeTab === "all"
+      ? trips
+      : trips.filter((t) => getTripStatus(t.startDate, t.endDate) === activeTab);
+
+  const hasTrips = trips.length > 0;
 
   return (
     <>
-      {/* Override body bg */}
-      <style>{`
-        body { background: #FAFAF7 !important; }
-      `}</style>
+      <style>{`body { background: #FAFAF7 !important; }`}</style>
 
       {/* ── Header ── */}
       <header
@@ -501,8 +297,7 @@ export function TripsDashboard({ trips, user }: TripsDashboardProps) {
               display: "flex",
               alignItems: "center",
               gap: 10,
-              fontFamily:
-                "'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif",
+              fontFamily: "'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif",
               fontWeight: 700,
               fontSize: 17,
               letterSpacing: "-0.02em",
@@ -547,45 +342,10 @@ export function TripsDashboard({ trips, user }: TripsDashboardProps) {
             >
               I miei viaggi
             </button>
-            <button
-              style={{
-                padding: "7px 12px",
-                fontSize: 13,
-                fontWeight: 600,
-                color: "#6E6A66",
-                borderRadius: 6,
-                border: "none",
-                background: "transparent",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-                fontFamily: "inherit",
-                transition: "background .12s, color .12s",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background =
-                  "#F6F4F0";
-                (e.currentTarget as HTMLButtonElement).style.color = "#1B1A19";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background =
-                  "transparent";
-                (e.currentTarget as HTMLButtonElement).style.color = "#6E6A66";
-              }}
-            >
-              Inviti
-            </button>
           </nav>
 
           {/* Right: search + avatar */}
-          <div
-            style={{
-              marginLeft: "auto",
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-            }}
-          >
-            {/* Search (decorative) */}
+          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
             <div
               style={{
                 display: "flex",
@@ -629,8 +389,6 @@ export function TripsDashboard({ trips, user }: TripsDashboardProps) {
                 }}
               />
             </div>
-
-            {/* Avatar with dropdown */}
             <AvatarDropdown initials={initials} />
           </div>
         </div>
@@ -646,176 +404,127 @@ export function TripsDashboard({ trips, user }: TripsDashboardProps) {
         }}
       >
         {/* Page header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-end",
-            gap: 16,
-            marginBottom: 24,
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 16, marginBottom: 24 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <h1
               style={{
                 fontSize: 28,
                 lineHeight: 1.1,
-                fontFamily:
-                  "'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif",
+                fontFamily: "'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif",
                 fontWeight: 700,
                 letterSpacing: "-0.02em",
                 color: "#1B1A19",
                 margin: 0,
               }}
             >
-              I tuoi viaggi
+              I miei viaggi
             </h1>
-            <p
-              style={{
-                color: "#6E6A66",
-                marginTop: 6,
-                fontSize: 14,
-              }}
-            >
+            <p style={{ color: "#6E6A66", marginTop: 6, fontSize: 14 }}>
               Tutto il tuo gruppo, in un unico posto.
             </p>
           </div>
-          <button
-            onClick={() => setModalOpen(true)}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "8px 14px",
-              fontSize: 13,
-              fontWeight: 600,
-              borderRadius: 6,
-              border: "1px solid transparent",
-              background: "#E55A4E",
-              color: "#FFFFFF",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              fontFamily: "inherit",
-              transition: "background .12s",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background =
-                "#C94A40";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background =
-                "#E55A4E";
-            }}
-          >
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          {hasTrips && (
+            <button
+              onClick={() => setModalOpen(true)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 14px",
+                fontSize: 13,
+                fontWeight: 600,
+                borderRadius: 6,
+                border: "1px solid transparent",
+                background: "#E55A4E",
+                color: "#FFFFFF",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                fontFamily: "inherit",
+                transition: "background .12s",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "#C94A40";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "#E55A4E";
+              }}
             >
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            Nuovo viaggio
-          </button>
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Nuovo viaggio
+            </button>
+          )}
         </div>
 
-        {/* Filter tabs row */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 18,
-          }}
-        >
-          {/* Tabs (decorative) */}
+        {/* Filter tabs — only when there are trips */}
+        {hasTrips && (
+          <div style={{ display: "flex", alignItems: "center", marginBottom: 18 }}>
+            <div
+              style={{
+                display: "inline-flex",
+                background: "#F6F4F0",
+                borderRadius: 9,
+                padding: 3,
+                gap: 2,
+                border: "1px solid #E8E4DE",
+              }}
+            >
+              {TABS.map((tab) => {
+                const isActive = activeTab === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    style={{
+                      padding: "6px 12px",
+                      fontSize: 12.5,
+                      fontWeight: 600,
+                      color: isActive ? "#1B1A19" : "#6E6A66",
+                      borderRadius: 6,
+                      border: "none",
+                      background: isActive ? "#FFFFFF" : "transparent",
+                      boxShadow: isActive ? "0 1px 2px rgba(20, 16, 12, 0.04)" : "none",
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                      fontFamily: "inherit",
+                      transition: "color .12s",
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Content */}
+        {!hasTrips ? (
+          <EmptyState onNewTrip={() => setModalOpen(true)} />
+        ) : filteredTrips.length === 0 ? (
           <div
             style={{
-              display: "inline-flex",
-              background: "#F6F4F0",
-              borderRadius: 9,
-              padding: 3,
-              gap: 2,
-              border: "1px solid #E8E4DE",
-            }}
-          >
-            {["Tutti", "In arrivo", "Passati"].map((tab, i) => (
-              <button
-                key={tab}
-                style={{
-                  padding: "6px 12px",
-                  fontSize: 12.5,
-                  fontWeight: 600,
-                  color: i === 0 ? "#1B1A19" : "#6E6A66",
-                  borderRadius: 6,
-                  border: "none",
-                  background:
-                    i === 0
-                      ? "#FFFFFF"
-                      : "transparent",
-                  cursor: "pointer",
-                  boxShadow:
-                    i === 0
-                      ? "0 1px 2px rgba(20, 16, 12, 0.04)"
-                      : "none",
-                  whiteSpace: "nowrap",
-                  fontFamily: "inherit",
-                  transition: "color .12s",
-                }}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          {/* Filter button (decorative) */}
-          <button
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "5px 10px",
-              fontSize: 12,
-              fontWeight: 600,
-              borderRadius: 6,
-              border: "1px solid #D8D2C8",
+              padding: "48px 24px",
+              textAlign: "center",
+              color: "#6E6A66",
+              fontSize: 14,
+              border: "1.5px dashed #D8D2C8",
+              borderRadius: 16,
               background: "#FFFFFF",
-              color: "#1B1A19",
-              cursor: "pointer",
-              fontFamily: "inherit",
-              transition: "background .12s",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background =
-                "#F6F4F0";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background =
-                "#FFFFFF";
             }}
           >
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M3 5h18l-7 9v6l-4-2v-4z" />
-            </svg>
-            Filtri
-          </button>
-        </div>
-
-        {/* Content: grid or empty state */}
-        {trips.length === 0 ? (
-          <EmptyState onNewTrip={() => setModalOpen(true)} />
+            Nessun viaggio in questa categoria.
+          </div>
         ) : (
           <div
             style={{
@@ -824,8 +533,8 @@ export function TripsDashboard({ trips, user }: TripsDashboardProps) {
               gap: 18,
             }}
           >
-            {trips.map((trip) => (
-              <TripCard key={trip.id} trip={trip} />
+            {filteredTrips.map((trip) => (
+              <TripCard key={trip.id} {...trip} />
             ))}
           </div>
         )}

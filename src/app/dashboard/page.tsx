@@ -38,6 +38,7 @@ export default async function Dashboard() {
     destination: p.trip.destination,
     coverKey: p.trip.coverKey,
     participantCount: p.trip._count.participants,
+    role: p.role,
   }));
 
   return (

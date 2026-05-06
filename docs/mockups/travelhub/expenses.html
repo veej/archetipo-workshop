@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spese — Estate Spagnola 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    /* ── EXPENSES LAYOUT ── */
+    .expenses-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 32px;
+      padding: 36px 0 64px;
+    }
+    @media (max-width: 900px) { .expenses-layout { grid-template-columns: 1fr; } }
+
+    /* ── BALANCE OVERVIEW (top bar) ── */
+    .balance-overview {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+    @media (max-width: 800px) { .balance-overview { grid-template-columns: repeat(2, 1fr); } }
+
+    .balance-person-card {
+      background: var(--bg-surface);
+      border-radius: var(--r-lg);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      border: 2px solid transparent;
+      transition: border-color 0.15s;
+    }
+    .balance-person-card.is-you { border-color: var(--coral-mid); }
+
+    .bpc-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .bpc-name { font-size: 14px; font-weight: 600; color: var(--t1); }
+    .bpc-role { font-size: 11px; color: var(--t3); margin-top: 1px; }
+    .bpc-amount {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 400;
+      letter-spacing: -0.5px;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .bpc-amount.positive { color: var(--green); }
+    .bpc-amount.negative { color: var(--coral); }
+    .bpc-amount.neutral  { color: var(--t2); }
+    .bpc-desc { font-size: 12px; color: var(--t3); }
+    .bpc-bar-wrap {
+      margin-top: 12px;
+      height: 4px;
+      background: var(--gray-100);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .bpc-bar { height: 100%; border-radius: 2px; }
+    .bpc-bar.green  { background: var(--green); }
+    .bpc-bar.red    { background: var(--coral); }
+    .bpc-bar.gray   { background: var(--gray-300, #CCCCCC); }
+
+    /* ── SETTLEMENT SECTION ── */
+    .settlement-card {
+      background: var(--bg-surface);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 22px 24px;
+      margin-bottom: 36px;
+    }
+    .settlement-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--t1);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .settlement-list { display: flex; flex-direction: column; gap: 12px; }
+    .settlement-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--bg-page);
+      border-radius: var(--r-md);
+      font-size: 14px;
+    }
+    .settlement-from { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+    .settlement-arrow {
+      color: var(--t3);
+      display: flex;
+      align-items: center;
+      flex: 1;
+      gap: 6px;
+      margin: 0 8px;
+    }
+    .settlement-arrow::before,
+    .settlement-arrow::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      border-top: 1.5px dashed var(--gray-200);
+    }
+    .settlement-arrow svg { width: 14px; height: 14px; flex-shrink: 0; color: var(--t4); }
+    .settlement-to   { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+    .settlement-amt  { font-size: 15px; font-weight: 700; color: var(--coral); margin-left: auto; flex-shrink: 0; }
+    .settle-btn {
+      padding: 6px 14px;
+      border-radius: var(--r-pill);
+      font-size: 12px;
+      font-weight: 600;
+      border: 1.5px solid var(--border);
+      background: var(--bg-surface);
+      color: var(--t2);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .settle-btn:hover { border-color: var(--green); color: var(--green); }
+
+    /* ── EXPENSE LIST ── */
+    .expense-list-hdr {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .expense-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .expense-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      background: var(--bg-surface);
+      border-radius: var(--r-md);
+      box-shadow: var(--shadow-xs);
+      border: 1px solid var(--border);
+      transition: box-shadow 0.15s, border-color 0.15s;
+      cursor: pointer;
+    }
+    .expense-item:hover { box-shadow: var(--shadow-md); border-color: var(--gray-300, #CCCCCC); }
+
+    .expense-category-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--r-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .exp-hotel     { background: var(--orange-light); }
+    .exp-food      { background: #FFF0F7; }
+    .exp-transport { background: var(--green-light); }
+    .exp-activity  { background: var(--blue-light); }
+
+    .expense-info { flex: 1; min-width: 0; }
+    .expense-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--t1);
+      margin-bottom: 3px;
+    }
+    .expense-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--t3);
+    }
+    .expense-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--gray-300, #CCCCCC); flex-shrink: 0; }
+    .expense-payer {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .expense-payer .avatar { width: 16px; height: 16px; font-size: 7px; }
+
+    .expense-amounts { text-align: right; flex-shrink: 0; }
+    .expense-total {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--t1);
+      margin-bottom: 3px;
+    }
+    .expense-my-share {
+      font-size: 12px;
+      color: var(--t3);
+    }
+    .expense-my-share span {
+      color: var(--coral);
+      font-weight: 600;
+    }
+
+    /* ── ADD EXPENSE BTN ── */
+    .add-expense-fab {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 22px;
+      background: var(--coral);
+      color: white;
+      border-radius: var(--r-pill);
+      font-size: 15px;
+      font-weight: 600;
+      box-shadow: 0 4px 20px rgba(232,79,71,0.4);
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      z-index: 50;
+    }
+    .add-expense-fab:hover {
+      background: var(--coral-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 28px rgba(232,79,71,0.45);
+    }
+    .add-expense-fab svg { width: 18px; height: 18px; }
+
+    /* ── SIDEBAR ── */
+    .exp-sidebar { display: flex; flex-direction: column; gap: 20px; }
+
+    .exp-summary-card { padding: 22px; }
+    .exp-summary-title { font-size: 14px; font-weight: 600; color: var(--t1); margin-bottom: 20px; }
+    .exp-summary-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .exp-summary-row:last-child { border-bottom: none; }
+    .exp-summary-label { color: var(--t3); }
+    .exp-summary-val { font-weight: 600; color: var(--t1); }
+    .exp-summary-total {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 2px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .exp-summary-total-label { font-size: 14px; font-weight: 600; color: var(--t1); }
+    .exp-summary-total-val {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--t1);
+    }
+
+    /* Category breakdown */
+    .category-bar-list { display: flex; flex-direction: column; gap: 14px; }
+    .cat-bar-item {}
+    .cat-bar-hdr {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    .cat-bar-label { color: var(--t2); font-weight: 500; }
+    .cat-bar-val { color: var(--t1); font-weight: 600; }
+    .cat-bar-track {
+      height: 6px;
+      background: var(--gray-100);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .cat-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+    }
+    .cat-hotel { background: var(--orange); }
+    .cat-food  { background: #E04080; }
+    .cat-trans { background: var(--green); }
+    .cat-act   { background: var(--blue); }
+  </style>
+</head>
+<body>
+
+  <!-- GLOBAL NAV -->
+  <nav class="gnav">
+    <div class="container">
+      <a href="index.html" class="gnav-logo">
+        <svg viewBox="0 0 26 26" fill="none">
+          <path d="M13 2C8.029 2 4 6.03 4 11c0 7.5 9 15 9 15s9-7.5 9-15c0-4.97-4.029-9-9-9z" fill="currentColor"/>
+          <circle cx="13" cy="11" r="3.2" fill="white"/>
+        </svg>
+        TravelHub
+      </a>
+      <div class="gnav-right">
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="notif-dot"></span>
+        </button>
+        <div class="avatar av-36 av-m">M</div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- TRIP HERO -->
+  <div class="trip-hero">
+    <div class="trip-hero-bg grad-bcn"></div>
+    <div class="trip-hero-overlay"></div>
+    <div class="trip-hero-inner">
+      <div class="container">
+        <div>
+          <a href="index.html" class="back-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+            </svg>
+            I miei viaggi
+          </a>
+          <p class="trip-hero-dest">Barcellona, Spagna</p>
+          <h1 class="trip-hero-name">Estate Spagnola 2026</h1>
+          <div class="trip-hero-dates">
+            <span>4 spese registrate</span>
+            <span>·</span>
+            <span>Totale €1.560</span>
+          </div>
+        </div>
+        <div style="flex-shrink:0;">
+          <button class="btn btn-outline btn-sm" style="background:rgba(255,255,255,0.15); border-color:rgba(255,255,255,0.4); color:white;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Aggiungi spesa
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRIP SUBNAV -->
+  <nav class="subnav">
+    <div class="container">
+      <a href="trip-dashboard.html" class="subnav-tab">Panoramica</a>
+      <a href="itinerary.html"      class="subnav-tab">Itinerario</a>
+      <a href="documents.html"      class="subnav-tab">Documenti</a>
+      <a href="expenses.html"       class="subnav-tab active">Spese</a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <div class="container">
+      <div class="expenses-layout">
+
+        <!-- LEFT COLUMN -->
+        <div>
+
+          <!-- BALANCE PER PERSON -->
+          <div class="sec-hdr fu" style="margin-top:36px;">
+            <h2 class="sec-title">Saldi del gruppo</h2>
+            <span class="pill pill-gray">4 persone</span>
+          </div>
+
+          <div class="balance-overview fu d1">
+
+            <div class="balance-person-card is-you">
+              <div class="bpc-top">
+                <div class="avatar av-36 av-m">M</div>
+                <div>
+                  <div class="bpc-name">Marco <span style="font-size:11px; color:var(--t3); font-weight:400;">(tu)</span></div>
+                  <div class="bpc-role">Organizzatore</div>
+                </div>
+              </div>
+              <div class="bpc-amount positive">+€810</div>
+              <div class="bpc-desc">hai da ricevere</div>
+              <div class="bpc-bar-wrap">
+                <div class="bpc-bar green" style="width: 100%;"></div>
+              </div>
+            </div>
+
+            <div class="balance-person-card">
+              <div class="bpc-top">
+                <div class="avatar av-36 av-s">S</div>
+                <div>
+                  <div class="bpc-name">Sara</div>
+                  <div class="bpc-role">Partecipante</div>
+                </div>
+              </div>
+              <div class="bpc-amount negative">−€210</div>
+              <div class="bpc-desc">deve a Marco</div>
+              <div class="bpc-bar-wrap">
+                <div class="bpc-bar red" style="width: 26%;"></div>
+              </div>
+            </div>
+
+            <div class="balance-person-card">
+              <div class="bpc-top">
+                <div class="avatar av-36 av-l">L</div>
+                <div>
+                  <div class="bpc-name">Luca</div>
+                  <div class="bpc-role">Partecipante</div>
+                </div>
+              </div>
+              <div class="bpc-amount negative">−€330</div>
+              <div class="bpc-desc">deve a Marco</div>
+              <div class="bpc-bar-wrap">
+                <div class="bpc-bar red" style="width: 41%;"></div>
+              </div>
+            </div>
+
+            <div class="balance-person-card">
+              <div class="bpc-top">
+                <div class="avatar av-36 av-g">G</div>
+                <div>
+                  <div class="bpc-name">Giulia</div>
+                  <div class="bpc-role">Partecipante</div>
+                </div>
+              </div>
+              <div class="bpc-amount negative">−€270</div>
+              <div class="bpc-desc">deve a Marco</div>
+              <div class="bpc-bar-wrap">
+                <div class="bpc-bar red" style="width: 33%;"></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- SETTLEMENT SUGGESTIONS -->
+          <div class="settlement-card fu d2">
+            <div class="settlement-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;color:var(--green);">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Come saldare i conti
+            </div>
+            <div class="settlement-list">
+              <div class="settlement-row">
+                <div class="settlement-from">
+                  <div class="avatar av-28 av-s">S</div>
+                  Sara
+                </div>
+                <div class="settlement-arrow">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </div>
+                <div class="settlement-to">
+                  <div class="avatar av-28 av-m">M</div>
+                  Marco
+                </div>
+                <span class="settlement-amt">€210</span>
+                <button class="settle-btn">Segna pagato</button>
+              </div>
+              <div class="settlement-row">
+                <div class="settlement-from">
+                  <div class="avatar av-28 av-l">L</div>
+                  Luca
+                </div>
+                <div class="settlement-arrow">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </div>
+                <div class="settlement-to">
+                  <div class="avatar av-28 av-m">M</div>
+                  Marco
+                </div>
+                <span class="settlement-amt">€330</span>
+                <button class="settle-btn">Segna pagato</button>
+              </div>
+              <div class="settlement-row">
+                <div class="settlement-from">
+                  <div class="avatar av-28 av-g">G</div>
+                  Giulia
+                </div>
+                <div class="settlement-arrow">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </div>
+                <div class="settlement-to">
+                  <div class="avatar av-28 av-m">M</div>
+                  Marco
+                </div>
+                <span class="settlement-amt">€270</span>
+                <button class="settle-btn">Segna pagato</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- EXPENSE LIST -->
+          <div class="fu d3">
+            <div class="expense-list-hdr">
+              <h3 class="sec-title">Tutte le spese</h3>
+              <span style="font-size:13px; color:var(--t3);">4 spese · €1.560 totali</span>
+            </div>
+
+            <div class="expense-list">
+
+              <div class="expense-item">
+                <div class="expense-category-icon exp-hotel">🏨</div>
+                <div class="expense-info">
+                  <div class="expense-name">Hotel Arts Barcelona</div>
+                  <div class="expense-meta">
+                    <div class="expense-payer">
+                      <div class="avatar av-m">M</div>
+                      pagato da Marco
+                    </div>
+                    <span class="expense-dot"></span>
+                    <span>15 Lug</span>
+                    <span class="expense-dot"></span>
+                    <span class="pill pill-orange" style="padding:2px 8px; font-size:11px;">Hotel</span>
+                  </div>
+                </div>
+                <div class="expense-amounts">
+                  <div class="expense-total">€1.200</div>
+                  <div class="expense-my-share">tua quota: <span>€300</span></div>
+                </div>
+              </div>
+
+              <div class="expense-item">
+                <div class="expense-category-icon exp-food">🦞</div>
+                <div class="expense-info">
+                  <div class="expense-name">Cena El Born</div>
+                  <div class="expense-meta">
+                    <div class="expense-payer">
+                      <div class="avatar av-s">S</div>
+                      pagato da Sara
+                    </div>
+                    <span class="expense-dot"></span>
+                    <span>17 Lug</span>
+                    <span class="expense-dot"></span>
+                    <span class="pill pill-gray" style="padding:2px 8px; font-size:11px;">Cibo</span>
+                  </div>
+                </div>
+                <div class="expense-amounts">
+                  <div class="expense-total">€180</div>
+                  <div class="expense-my-share">tua quota: <span>€45</span></div>
+                </div>
+              </div>
+
+              <div class="expense-item">
+                <div class="expense-category-icon exp-activity">⛪</div>
+                <div class="expense-info">
+                  <div class="expense-name">Biglietti Sagrada Família</div>
+                  <div class="expense-meta">
+                    <div class="expense-payer">
+                      <div class="avatar av-g">G</div>
+                      pagato da Giulia
+                    </div>
+                    <span class="expense-dot"></span>
+                    <span>14 Lug</span>
+                    <span class="expense-dot"></span>
+                    <span class="pill pill-blue" style="padding:2px 8px; font-size:11px;">Attività</span>
+                  </div>
+                </div>
+                <div class="expense-amounts">
+                  <div class="expense-total">€120</div>
+                  <div class="expense-my-share">tua quota: <span>€30</span></div>
+                </div>
+              </div>
+
+              <div class="expense-item">
+                <div class="expense-category-icon exp-transport">🚕</div>
+                <div class="expense-info">
+                  <div class="expense-name">Taxi dall'aeroporto</div>
+                  <div class="expense-meta">
+                    <div class="expense-payer">
+                      <div class="avatar av-l">L</div>
+                      pagato da Luca
+                    </div>
+                    <span class="expense-dot"></span>
+                    <span>15 Lug</span>
+                    <span class="expense-dot"></span>
+                    <span class="pill pill-green" style="padding:2px 8px; font-size:11px;">Trasporto</span>
+                  </div>
+                </div>
+                <div class="expense-amounts">
+                  <div class="expense-total">€60</div>
+                  <div class="expense-my-share">tua quota: <span>€15</span></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div><!-- /left col -->
+
+        <!-- SIDEBAR -->
+        <aside class="exp-sidebar">
+
+          <!-- Summary -->
+          <div class="card exp-summary-card fu d1">
+            <div class="exp-summary-title">Riepilogo viaggio</div>
+            <div class="exp-summary-row">
+              <span class="exp-summary-label">Totale speso</span>
+              <span class="exp-summary-val">€1.560</span>
+            </div>
+            <div class="exp-summary-row">
+              <span class="exp-summary-label">Quota per persona</span>
+              <span class="exp-summary-val">€390</span>
+            </div>
+            <div class="exp-summary-row">
+              <span class="exp-summary-label">Hai pagato</span>
+              <span class="exp-summary-val">€1.200</span>
+            </div>
+            <div class="exp-summary-row">
+              <span class="exp-summary-label">Spese registrate</span>
+              <span class="exp-summary-val">4</span>
+            </div>
+            <div class="exp-summary-total">
+              <span class="exp-summary-total-label">Il tuo saldo</span>
+              <span class="exp-summary-total-val" style="color:var(--green);">+€810</span>
+            </div>
+          </div>
+
+          <!-- Category breakdown -->
+          <div class="card exp-summary-card fu d2">
+            <div class="exp-summary-title">Spese per categoria</div>
+            <div class="category-bar-list">
+              <div class="cat-bar-item">
+                <div class="cat-bar-hdr">
+                  <span class="cat-bar-label">🏨 Alloggio</span>
+                  <span class="cat-bar-val">€1.200</span>
+                </div>
+                <div class="cat-bar-track">
+                  <div class="cat-bar-fill cat-hotel" style="width:77%;"></div>
+                </div>
+              </div>
+              <div class="cat-bar-item">
+                <div class="cat-bar-hdr">
+                  <span class="cat-bar-label">🦞 Cibo</span>
+                  <span class="cat-bar-val">€180</span>
+                </div>
+                <div class="cat-bar-track">
+                  <div class="cat-bar-fill cat-food" style="width:12%;"></div>
+                </div>
+              </div>
+              <div class="cat-bar-item">
+                <div class="cat-bar-hdr">
+                  <span class="cat-bar-label">⛪ Attività</span>
+                  <span class="cat-bar-val">€120</span>
+                </div>
+                <div class="cat-bar-track">
+                  <div class="cat-bar-fill cat-act" style="width:8%;"></div>
+                </div>
+              </div>
+              <div class="cat-bar-item">
+                <div class="cat-bar-hdr">
+                  <span class="cat-bar-label">🚕 Trasporto</span>
+                  <span class="cat-bar-val">€60</span>
+                </div>
+                <div class="cat-bar-track">
+                  <div class="cat-bar-fill cat-trans" style="width:4%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Export -->
+          <div class="card exp-summary-card fu d3">
+            <div class="exp-summary-title">Esporta</div>
+            <p style="font-size:13px; color:var(--t3); margin-bottom:16px; line-height:1.6;">
+              Scarica il riepilogo delle spese in formato PDF o CSV — utile per rimborsi aziendali.
+            </p>
+            <div style="display:flex; gap:10px;">
+              <button class="btn btn-outline btn-sm" style="flex:1; justify-content:center;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                PDF
+              </button>
+              <button class="btn btn-outline btn-sm" style="flex:1; justify-content:center;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                CSV
+              </button>
+            </div>
+          </div>
+
+        </aside>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- FAB -->
+  <button class="add-expense-fab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Aggiungi spesa
+  </button>
+
+</body>
+</html>

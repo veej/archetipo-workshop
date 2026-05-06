@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuovo viaggio — TravelHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    body { background: var(--bg-surface); overflow-x: hidden; }
+
+    /* ── WIZARD SHELL ── */
+    .wizard {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* TOP BAR */
+    .wizard-topbar {
+      height: 64px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      flex-shrink: 0;
+    }
+    .wizard-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-display);
+      font-size: 18px;
+      color: var(--coral);
+    }
+    .wizard-logo svg { width: 22px; height: 22px; }
+    .wizard-step-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--t3);
+      letter-spacing: 0.2px;
+    }
+    .wizard-close {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--r-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--t2);
+      cursor: pointer;
+      transition: background 0.15s;
+      border: 1.5px solid var(--border);
+      text-decoration: none;
+    }
+    .wizard-close:hover { background: var(--bg-hover); }
+    .wizard-close svg { width: 18px; height: 18px; }
+
+    /* PROGRESS BAR */
+    .wizard-progress {
+      height: 3px;
+      background: var(--gray-100);
+      flex-shrink: 0;
+    }
+    .wizard-progress-fill {
+      height: 100%;
+      background: var(--coral);
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* BODY */
+    .wizard-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* STEP */
+    .wizard-step {
+      width: 100%;
+      max-width: 540px;
+      display: none;
+      animation: slideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+    .wizard-step.active { display: block; }
+    .wizard-step.exit-left  { animation: slideOutLeft  0.3s ease both; }
+    .wizard-step.enter-right { animation: slideInRight 0.35s cubic-bezier(0.4,0,0.2,1) both; }
+    .wizard-step.enter-left  { animation: slideInLeft  0.35s cubic-bezier(0.4,0,0.2,1) both; }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--coral);
+      margin-bottom: 10px;
+    }
+    .step-title {
+      font-family: var(--font-display);
+      font-size: 38px;
+      font-weight: 400;
+      letter-spacing: -0.6px;
+      line-height: 1.15;
+      color: var(--t1);
+      margin-bottom: 8px;
+    }
+    .step-subtitle {
+      font-size: 15px;
+      color: var(--t3);
+      margin-bottom: 36px;
+      line-height: 1.6;
+    }
+
+    /* ── INPUTS ── */
+    .big-input-wrap {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .big-input-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--t3);
+      display: flex;
+    }
+    .big-input-icon svg { width: 20px; height: 20px; }
+    .big-input {
+      width: 100%;
+      padding: 16px 16px 16px 48px;
+      font-size: 16px;
+      font-family: var(--font-body);
+      border: 2px solid var(--border);
+      border-radius: var(--r-lg);
+      color: var(--t1);
+      background: var(--bg-surface);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .big-input:focus {
+      border-color: var(--coral);
+      box-shadow: 0 0 0 4px var(--coral-light);
+    }
+    .big-input::placeholder { color: var(--t4); }
+
+    /* Destination suggestions */
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .suggestion-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: var(--r-pill);
+      border: 1.5px solid var(--border);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--t2);
+      cursor: pointer;
+      background: var(--bg-surface);
+      transition: all 0.15s;
+    }
+    .suggestion-chip:hover {
+      border-color: var(--coral);
+      color: var(--coral);
+      background: var(--coral-light);
+    }
+    .suggestion-chip.selected {
+      border-color: var(--coral);
+      background: var(--coral);
+      color: white;
+    }
+
+    /* ── DATE STEP ── */
+    .dates-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .date-field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--t3);
+      margin-bottom: 8px;
+    }
+    .date-input-wrap {
+      position: relative;
+    }
+    .date-input-wrap svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: var(--t3);
+      pointer-events: none;
+    }
+    .date-input {
+      width: 100%;
+      padding: 13px 14px 13px 40px;
+      font-size: 15px;
+      font-family: var(--font-body);
+      border: 2px solid var(--border);
+      border-radius: var(--r-md);
+      color: var(--t1);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      background: var(--bg-surface);
+    }
+    .date-input:focus {
+      border-color: var(--coral);
+      box-shadow: 0 0 0 4px var(--coral-light);
+    }
+
+    .duration-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: var(--green-light);
+      color: var(--green);
+      border-radius: var(--r-pill);
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .duration-chip svg { width: 14px; height: 14px; }
+
+    /* ── NAME + COVER STEP ── */
+    .cover-picker {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .cover-option {
+      height: 80px;
+      border-radius: var(--r-md);
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: all 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .cover-option:hover { transform: scale(1.03); }
+    .cover-option.selected {
+      border-color: var(--coral);
+      box-shadow: 0 0 0 2px var(--coral-light);
+    }
+    .cover-option.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 22px;
+      height: 22px;
+      background: var(--coral);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: white;
+      line-height: 22px;
+      text-align: center;
+    }
+    .cover-upload {
+      height: 80px;
+      border-radius: var(--r-md);
+      border: 2px dashed var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      color: var(--t3);
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .cover-upload:hover { border-color: var(--coral); color: var(--coral); background: var(--coral-light); }
+    .cover-upload svg { width: 16px; height: 16px; }
+
+    /* Cover gradients */
+    .cg-1 { background: linear-gradient(155deg, #FFB347 0%, #F07038 40%, #E8504A 100%); }
+    .cg-2 { background: linear-gradient(155deg, #8040C8 0%, #604878 50%, #3A2058 100%); }
+    .cg-3 { background: linear-gradient(155deg, #2A8C5C 0%, #1C6042 50%, #144030 100%); }
+    .cg-4 { background: linear-gradient(155deg, #3B7FDB 0%, #2860B8 50%, #1A4090 100%); }
+    .cg-5 { background: linear-gradient(155deg, #E04080 0%, #C03060 50%, #802050 100%); }
+
+    /* ── INVITE STEP ── */
+    .invite-input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .invite-input-row .big-input {
+      margin-bottom: 0;
+    }
+    .invite-input-row .big-input-wrap { flex: 1; margin-bottom: 0; }
+
+    .invited-list { display: flex; flex-direction: column; gap: 10px; }
+    .invited-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg-page);
+      border-radius: var(--r-md);
+      border: 1px solid var(--border);
+    }
+    .invited-email { flex: 1; font-size: 14px; color: var(--t2); }
+    .invited-status { font-size: 12px; font-weight: 600; color: var(--t3); }
+    .invited-remove {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--r-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--t4);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .invited-remove:hover { background: var(--coral-light); color: var(--coral); }
+    .invited-remove svg { width: 14px; height: 14px; }
+
+    .skip-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--t3);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      cursor: pointer;
+      margin-top: 12px;
+      display: inline-block;
+    }
+    .skip-link:hover { color: var(--t1); }
+
+    /* ── FOOTER ── */
+    .wizard-footer {
+      border-top: 1px solid var(--border);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .back-btn-wizard {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--t2);
+      padding: 10px 16px;
+      border-radius: var(--r-md);
+      cursor: pointer;
+      transition: all 0.15s;
+      border: none;
+      background: none;
+    }
+    .back-btn-wizard:hover { background: var(--bg-hover); color: var(--t1); }
+    .back-btn-wizard svg { width: 16px; height: 16px; }
+    .back-btn-wizard.hidden { visibility: hidden; pointer-events: none; }
+
+    .next-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 28px;
+      background: var(--coral);
+      color: white;
+      border-radius: var(--r-md);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+    .next-btn:hover {
+      background: var(--coral-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(232,79,71,0.35);
+    }
+    .next-btn svg { width: 16px; height: 16px; }
+    .next-btn.create {
+      background: var(--green);
+      padding: 13px 32px;
+    }
+    .next-btn.create:hover {
+      background: #009068;
+      box-shadow: 0 4px 14px rgba(0,168,119,0.35);
+    }
+
+    /* ── SUCCESS STATE ── */
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+    .success-screen.active { display: block; animation: slideIn 0.5s ease both; }
+    .success-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: var(--r-full);
+      background: var(--green-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+    }
+    .success-icon svg { width: 36px; height: 36px; color: var(--green); }
+    .success-title {
+      font-family: var(--font-display);
+      font-size: 34px;
+      color: var(--t1);
+      margin-bottom: 10px;
+    }
+    .success-sub { font-size: 16px; color: var(--t3); margin-bottom: 32px; }
+    .success-preview {
+      background: var(--bg-page);
+      border-radius: var(--r-xl);
+      padding: 24px;
+      margin-bottom: 32px;
+      text-align: left;
+    }
+    .success-preview-header {
+      height: 120px;
+      border-radius: var(--r-lg);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .success-trip-name { font-family: var(--font-display); font-size: 22px; margin-bottom: 4px; }
+    .success-trip-meta { font-size: 14px; color: var(--t3); }
+  </style>
+</head>
+<body>
+
+<div class="wizard" id="wizard">
+
+  <!-- TOP BAR -->
+  <header class="wizard-topbar">
+    <a href="index.html" class="wizard-logo">
+      <svg viewBox="0 0 26 26" fill="none">
+        <path d="M13 2C8.029 2 4 6.03 4 11c0 7.5 9 15 9 15s9-7.5 9-15c0-4.97-4.029-9-9-9z" fill="currentColor"/>
+        <circle cx="13" cy="11" r="3.2" fill="white"/>
+      </svg>
+      TravelHub
+    </a>
+    <span class="wizard-step-label" id="stepLabel">Passo 1 di 4</span>
+    <a href="index.html" class="wizard-close" title="Chiudi">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </a>
+  </header>
+
+  <!-- PROGRESS -->
+  <div class="wizard-progress">
+    <div class="wizard-progress-fill" id="progressFill" style="width:25%;"></div>
+  </div>
+
+  <!-- BODY -->
+  <div class="wizard-body">
+
+    <!-- STEP 1: DESTINATION -->
+    <div class="wizard-step active" id="step1">
+      <p class="step-eyebrow">Passo 1 — Destinazione</p>
+      <h2 class="step-title">Dove andate?</h2>
+      <p class="step-subtitle">Scegli la destinazione principale del viaggio.</p>
+
+      <div class="big-input-wrap">
+        <div class="big-input-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </div>
+        <input class="big-input" type="text" id="destInput" placeholder="Es. Barcellona, Tokyo, Praga…" value="Barcellona, Spagna">
+      </div>
+
+      <div class="suggestions">
+        <button class="suggestion-chip selected" onclick="selectChip(this, 'Barcellona, Spagna')">🇪🇸 Barcellona</button>
+        <button class="suggestion-chip" onclick="selectChip(this, 'Roma, Italia')">🇮🇹 Roma</button>
+        <button class="suggestion-chip" onclick="selectChip(this, 'Parigi, Francia')">🇫🇷 Parigi</button>
+        <button class="suggestion-chip" onclick="selectChip(this, 'Amsterdam, Paesi Bassi')">🇳🇱 Amsterdam</button>
+        <button class="suggestion-chip" onclick="selectChip(this, 'Tokyo, Giappone')">🇯🇵 Tokyo</button>
+        <button class="suggestion-chip" onclick="selectChip(this, 'New York, USA')">🇺🇸 New York</button>
+        <button class="suggestion-chip" onclick="selectChip(this, 'Lisbona, Portogallo')">🇵🇹 Lisbona</button>
+        <button class="suggestion-chip" onclick="selectChip(this, 'Praga, Rep. Ceca')">🇨🇿 Praga</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: DATES -->
+    <div class="wizard-step" id="step2">
+      <p class="step-eyebrow">Passo 2 — Date</p>
+      <h2 class="step-title">Quando partite?</h2>
+      <p class="step-subtitle">Seleziona le date di partenza e ritorno.</p>
+
+      <div class="dates-row">
+        <div class="date-field">
+          <label>Partenza</label>
+          <div class="date-input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <input class="date-input" type="date" id="dateStart" value="2026-07-15">
+          </div>
+        </div>
+        <div class="date-field">
+          <label>Ritorno</label>
+          <div class="date-input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <input class="date-input" type="date" id="dateEnd" value="2026-07-22">
+          </div>
+        </div>
+      </div>
+
+      <span class="duration-chip" id="durationChip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+        8 giorni · 7 notti
+      </span>
+    </div>
+
+    <!-- STEP 3: NAME + COVER -->
+    <div class="wizard-step" id="step3">
+      <p class="step-eyebrow">Passo 3 — Nome e copertina</p>
+      <h2 class="step-title">Come si chiama?</h2>
+      <p class="step-subtitle">Dai un nome al viaggio e scegli un'immagine di copertina.</p>
+
+      <div class="big-input-wrap" style="margin-bottom:28px;">
+        <div class="big-input-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+        </div>
+        <input class="big-input" type="text" id="nameInput" placeholder="Es. Estate Spagnola 2026" value="Estate Spagnola 2026">
+      </div>
+
+      <p style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:var(--t3); margin-bottom:12px;">Copertina</p>
+      <div class="cover-picker">
+        <div class="cover-option cg-1 selected" onclick="selectCover(this)"></div>
+        <div class="cover-option cg-2" onclick="selectCover(this)"></div>
+        <div class="cover-option cg-3" onclick="selectCover(this)"></div>
+        <div class="cover-option cg-4" onclick="selectCover(this)"></div>
+        <div class="cover-option cg-5" onclick="selectCover(this)"></div>
+        <div class="cover-upload" onclick="">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          Carica foto
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: INVITE -->
+    <div class="wizard-step" id="step4">
+      <p class="step-eyebrow">Passo 4 — Partecipanti</p>
+      <h2 class="step-title">Chi viene?</h2>
+      <p class="step-subtitle">Invita i tuoi amici via email. Potrai farlo anche dopo.</p>
+
+      <div class="invite-input-row">
+        <div class="big-input-wrap">
+          <div class="big-input-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          <input class="big-input" type="email" placeholder="email@amico.com" id="emailInput">
+        </div>
+        <button class="btn btn-primary" onclick="addInvite()" style="flex-shrink:0; padding:16px 22px;">Aggiungi</button>
+      </div>
+
+      <div class="invited-list" id="invitedList">
+        <div class="invited-item">
+          <div class="avatar av-32 av-s">S</div>
+          <span class="invited-email">sara.bianchi@gmail.com</span>
+          <span class="invited-status">Invito inviato</span>
+          <button class="invited-remove" onclick="this.closest('.invited-item').remove()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="invited-item">
+          <div class="avatar av-32 av-l">L</div>
+          <span class="invited-email">luca.m@hotmail.com</span>
+          <span class="invited-status">Invito inviato</span>
+          <button class="invited-remove" onclick="this.closest('.invited-item').remove()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <a class="skip-link" onclick="createTrip()">Salta per ora →</a>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success-screen" id="successScreen">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <h2 class="success-title">Viaggio creato!</h2>
+      <p class="success-sub">Il gruppo riceverà un invito via email.</p>
+
+      <div class="success-preview">
+        <div class="success-preview-header cg-1"></div>
+        <div class="success-trip-name">Estate Spagnola 2026</div>
+        <div class="success-trip-meta">📍 Barcellona, Spagna · 15–22 Luglio 2026 · 3 partecipanti</div>
+      </div>
+
+      <div style="display:flex; gap:12px; justify-content:center;">
+        <a href="trip-dashboard.html" class="btn btn-primary" style="font-size:15px; padding:13px 28px;">
+          Vai al viaggio →
+        </a>
+        <a href="index.html" class="btn btn-outline">
+          I miei viaggi
+        </a>
+      </div>
+    </div>
+
+  </div><!-- /wizard-body -->
+
+  <!-- FOOTER -->
+  <footer class="wizard-footer" id="wizardFooter">
+    <button class="back-btn-wizard hidden" id="backBtn" onclick="prevStep()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+      </svg>
+      Indietro
+    </button>
+    <div></div>
+    <button class="next-btn" id="nextBtn" onclick="nextStep()">
+      Avanti
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+      </svg>
+    </button>
+  </footer>
+
+</div><!-- /wizard -->
+
+<script>
+  let currentStep = 1;
+  const totalSteps = 4;
+
+  const steps = ['step1','step2','step3','step4'];
+  const labels = ['Passo 1 di 4','Passo 2 di 4','Passo 3 di 4','Passo 4 di 4'];
+  const progress = ['25%','50%','75%','100%'];
+
+  function updateUI() {
+    steps.forEach((id, i) => {
+      const el = document.getElementById(id);
+      el.classList.toggle('active', i + 1 === currentStep);
+    });
+    document.getElementById('stepLabel').textContent = labels[currentStep - 1];
+    document.getElementById('progressFill').style.width = progress[currentStep - 1];
+
+    const backBtn = document.getElementById('backBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    backBtn.classList.toggle('hidden', currentStep === 1);
+
+    if (currentStep === 4) {
+      nextBtn.textContent = '';
+      nextBtn.innerHTML = '✓ Crea viaggio';
+      nextBtn.classList.add('create');
+      nextBtn.onclick = createTrip;
+    } else {
+      nextBtn.innerHTML = 'Avanti <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:16px;height:16px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+      nextBtn.classList.remove('create');
+      nextBtn.onclick = nextStep;
+    }
+  }
+
+  function nextStep() {
+    if (currentStep < totalSteps) {
+      currentStep++;
+      updateUI();
+    }
+  }
+
+  function prevStep() {
+    if (currentStep > 1) {
+      currentStep--;
+      updateUI();
+    }
+  }
+
+  function createTrip() {
+    steps.forEach(id => document.getElementById(id).classList.remove('active'));
+    document.getElementById('successScreen').classList.add('active');
+    document.getElementById('wizardFooter').style.display = 'none';
+    document.getElementById('stepLabel').textContent = 'Viaggio creato!';
+    document.getElementById('progressFill').style.width = '100%';
+    document.getElementById('progressFill').style.background = 'var(--green)';
+  }
+
+  function selectChip(el, value) {
+    document.querySelectorAll('.suggestion-chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('destInput').value = value;
+  }
+
+  function selectCover(el) {
+    document.querySelectorAll('.cover-option').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function addInvite() {
+    const input = document.getElementById('emailInput');
+    const email = input.value.trim();
+    if (!email) return;
+    const colors = ['av-m','av-s','av-l','av-g'];
+    const letters = email[0].toUpperCase();
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const item = document.createElement('div');
+    item.className = 'invited-item';
+    item.innerHTML = `
+      <div class="avatar av-32 ${color}">${letters}</div>
+      <span class="invited-email">${email}</span>
+      <span class="invited-status">In attesa</span>
+      <button class="invited-remove" onclick="this.closest('.invited-item').remove()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>`;
+    document.getElementById('invitedList').appendChild(item);
+    input.value = '';
+    input.focus();
+  }
+
+  // Duration calculation
+  document.getElementById('dateStart')?.addEventListener('change', updateDuration);
+  document.getElementById('dateEnd')?.addEventListener('change', updateDuration);
+  function updateDuration() {
+    const s = new Date(document.getElementById('dateStart').value);
+    const e = new Date(document.getElementById('dateEnd').value);
+    if (s && e && e > s) {
+      const days = Math.round((e - s) / 86400000);
+      document.getElementById('durationChip').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${days} giorni · ${days - 1} notti`;
+    }
+  }
+</script>
+
+</body>
+</html>

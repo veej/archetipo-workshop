@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documenti — Estate Spagnola 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    /* ── TOOLBAR ── */
+    .docs-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 28px 0 24px;
+    }
+    .filter-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 14px;
+      border-radius: var(--r-pill);
+      font-size: 13px;
+      font-weight: 600;
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      background: var(--bg-surface);
+      color: var(--t2);
+      transition: all 0.15s;
+    }
+    .filter-pill:hover { border-color: var(--gray-700); color: var(--t1); }
+    .filter-pill.active {
+      background: var(--t1);
+      border-color: var(--t1);
+      color: white;
+    }
+    .filter-pill-count {
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
+      padding: 1px 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .filter-pill:not(.active) .filter-pill-count {
+      background: var(--gray-100);
+      color: var(--t3);
+    }
+
+    /* ── UPLOAD ZONE ── */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--r-lg);
+      padding: 28px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--bg-surface);
+      margin-bottom: 32px;
+    }
+    .upload-zone:hover {
+      border-color: var(--coral);
+      background: var(--coral-light);
+    }
+    .upload-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--r-md);
+      background: var(--coral-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--coral);
+      transition: background 0.15s;
+    }
+    .upload-zone:hover .upload-icon { background: var(--coral-mid); }
+    .upload-icon svg { width: 22px; height: 22px; }
+    .upload-text-title { font-size: 15px; font-weight: 600; color: var(--t1); margin-bottom: 3px; }
+    .upload-text-sub { font-size: 13px; color: var(--t3); }
+
+    /* ── SECTION + GRID ── */
+    .docs-section { margin-bottom: 40px; }
+    .docs-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      color: var(--t3);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .docs-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .docs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    /* ── DOC CARD ── */
+    .doc-card {
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .doc-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+
+    .doc-card-preview {
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .doc-card-preview-flight  { background: linear-gradient(135deg, var(--blue-light) 0%, #D9EAFF 100%); }
+    .doc-card-preview-hotel   { background: linear-gradient(135deg, var(--orange-light) 0%, #FFEBD6 100%); }
+    .doc-card-preview-booking { background: linear-gradient(135deg, var(--purple-light) 0%, #EDE8FF 100%); }
+    .doc-card-preview-other   { background: linear-gradient(135deg, var(--gray-100) 0%, #E8E8E8 100%); }
+
+    .doc-preview-icon {
+      font-size: 44px;
+      opacity: 0.6;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .doc-card:hover .doc-preview-icon { opacity: 0.9; transform: scale(1.08); }
+
+    .doc-preview-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+
+    .doc-card-body { padding: 14px 16px 16px; flex: 1; }
+    .doc-card-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--t1);
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .doc-card-meta {
+      font-size: 12px;
+      color: var(--t3);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .doc-card-meta-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--gray-300, #CCCCCC); flex-shrink: 0; }
+    .doc-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .doc-card-uploader {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--t3);
+    }
+    .doc-card-uploader .avatar { width: 20px; height: 20px; font-size: 8px; }
+    .doc-action-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--r-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--t3);
+      cursor: pointer;
+      transition: all 0.15s;
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+    }
+    .doc-action-btn:hover { color: var(--t1); border-color: var(--t1); }
+    .doc-action-btn svg { width: 14px; height: 14px; }
+
+    /* ── LIST VIEW (for 1 item sections) ── */
+    .doc-list-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: var(--r-md);
+      cursor: pointer;
+      transition: background 0.15s;
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      margin-bottom: 10px;
+    }
+    .doc-list-item:last-child { margin-bottom: 0; }
+    .doc-list-item:hover { background: var(--bg-hover); border-color: var(--gray-300, #CCCCCC); }
+    .doc-list-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--r-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 22px;
+    }
+    .doc-list-info { flex: 1; min-width: 0; }
+    .doc-list-name { font-size: 14px; font-weight: 600; color: var(--t1); }
+    .doc-list-meta { font-size: 12px; color: var(--t3); margin-top: 2px; }
+    .doc-list-actions { display: flex; gap: 6px; }
+  </style>
+</head>
+<body>
+
+  <!-- GLOBAL NAV -->
+  <nav class="gnav">
+    <div class="container">
+      <a href="index.html" class="gnav-logo">
+        <svg viewBox="0 0 26 26" fill="none">
+          <path d="M13 2C8.029 2 4 6.03 4 11c0 7.5 9 15 9 15s9-7.5 9-15c0-4.97-4.029-9-9-9z" fill="currentColor"/>
+          <circle cx="13" cy="11" r="3.2" fill="white"/>
+        </svg>
+        TravelHub
+      </a>
+      <div class="gnav-right">
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="notif-dot"></span>
+        </button>
+        <div class="avatar av-36 av-m">M</div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- TRIP HERO -->
+  <div class="trip-hero">
+    <div class="trip-hero-bg grad-bcn"></div>
+    <div class="trip-hero-overlay"></div>
+    <div class="trip-hero-inner">
+      <div class="container">
+        <div>
+          <a href="index.html" class="back-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+            </svg>
+            I miei viaggi
+          </a>
+          <p class="trip-hero-dest">Barcellona, Spagna</p>
+          <h1 class="trip-hero-name">Estate Spagnola 2026</h1>
+          <div class="trip-hero-dates">
+            <span>5 documenti caricati</span>
+            <span>·</span>
+            <span>Accessibili a 4 partecipanti</span>
+          </div>
+        </div>
+        <div style="flex-shrink:0;">
+          <button class="btn btn-outline btn-sm" style="background:rgba(255,255,255,0.15); border-color:rgba(255,255,255,0.4); color:white;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Carica documento
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRIP SUBNAV -->
+  <nav class="subnav">
+    <div class="container">
+      <a href="trip-dashboard.html" class="subnav-tab">Panoramica</a>
+      <a href="itinerary.html"      class="subnav-tab">Itinerario</a>
+      <a href="documents.html"      class="subnav-tab active">Documenti</a>
+      <a href="expenses.html"       class="subnav-tab">Spese</a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <div class="container">
+
+      <!-- TOOLBAR -->
+      <div class="docs-toolbar fu">
+        <div class="filter-pills">
+          <button class="filter-pill active">
+            Tutti
+            <span class="filter-pill-count">5</span>
+          </button>
+          <button class="filter-pill">
+            ✈️ Volo
+            <span class="filter-pill-count">2</span>
+          </button>
+          <button class="filter-pill">
+            🏨 Hotel
+            <span class="filter-pill-count">1</span>
+          </button>
+          <button class="filter-pill">
+            🎟 Prenotazione
+            <span class="filter-pill-count">2</span>
+          </button>
+          <button class="filter-pill">
+            📄 Altro
+            <span class="filter-pill-count">0</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- UPLOAD ZONE -->
+      <div class="upload-zone fu d1">
+        <div class="upload-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        <div>
+          <div class="upload-text-title">Trascina qui i tuoi documenti</div>
+          <div class="upload-text-sub">PDF, JPG, PNG fino a 20 MB · visibili a tutti i partecipanti</div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="margin-left:auto; flex-shrink:0;">Scegli file</button>
+      </div>
+
+      <!-- SECTION: VOLI -->
+      <div class="docs-section fu d2">
+        <div class="docs-section-title">✈️ Volo</div>
+        <div class="docs-grid">
+
+          <div class="doc-card card">
+            <div class="doc-card-preview doc-card-preview-flight">
+              <span class="doc-preview-icon">✈️</span>
+              <span class="doc-preview-badge pill pill-blue">Volo</span>
+            </div>
+            <div class="doc-card-body">
+              <div class="doc-card-name">Ryanair FR5234 — Andata</div>
+              <div class="doc-card-meta">
+                PDF · 128 KB
+                <span class="doc-card-meta-dot"></span>
+                10 Lug 2026
+              </div>
+              <div class="doc-card-footer">
+                <div class="doc-card-uploader">
+                  <div class="avatar av-m">M</div>
+                  Marco
+                </div>
+                <button class="doc-action-btn" title="Scarica">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="doc-card card">
+            <div class="doc-card-preview doc-card-preview-flight">
+              <span class="doc-preview-icon">✈️</span>
+              <span class="doc-preview-badge pill pill-blue">Volo</span>
+            </div>
+            <div class="doc-card-body">
+              <div class="doc-card-name">Ryanair FR5239 — Ritorno</div>
+              <div class="doc-card-meta">
+                PDF · 118 KB
+                <span class="doc-card-meta-dot"></span>
+                12 Lug 2026
+              </div>
+              <div class="doc-card-footer">
+                <div class="doc-card-uploader">
+                  <div class="avatar av-m">M</div>
+                  Marco
+                </div>
+                <button class="doc-action-btn" title="Scarica">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SECTION: HOTEL -->
+      <div class="docs-section fu d3">
+        <div class="docs-section-title">🏨 Hotel</div>
+        <div class="docs-grid">
+
+          <div class="doc-card card">
+            <div class="doc-card-preview doc-card-preview-hotel">
+              <span class="doc-preview-icon">🏨</span>
+              <span class="doc-preview-badge pill pill-orange">Hotel</span>
+            </div>
+            <div class="doc-card-body">
+              <div class="doc-card-name">Hotel Arts Barcelona — Conferma prenotazione</div>
+              <div class="doc-card-meta">
+                PDF · 245 KB
+                <span class="doc-card-meta-dot"></span>
+                10 Lug 2026
+              </div>
+              <div class="doc-card-footer">
+                <div class="doc-card-uploader">
+                  <div class="avatar av-m">M</div>
+                  Marco
+                </div>
+                <button class="doc-action-btn" title="Scarica">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SECTION: PRENOTAZIONI -->
+      <div class="docs-section fu d4">
+        <div class="docs-section-title">🎟 Prenotazione</div>
+        <div class="docs-grid">
+
+          <div class="doc-card card">
+            <div class="doc-card-preview doc-card-preview-booking">
+              <span class="doc-preview-icon">⛪</span>
+              <span class="doc-preview-badge pill pill-purple">Prenotazione</span>
+            </div>
+            <div class="doc-card-body">
+              <div class="doc-card-name">Sagrada Família — Biglietti d'ingresso</div>
+              <div class="doc-card-meta">
+                PDF · 88 KB
+                <span class="doc-card-meta-dot"></span>
+                14 Lug 2026
+              </div>
+              <div class="doc-card-footer">
+                <div class="doc-card-uploader">
+                  <div class="avatar av-m">M</div>
+                  Marco
+                </div>
+                <button class="doc-action-btn" title="Scarica">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="doc-card card">
+            <div class="doc-card-preview doc-card-preview-booking">
+              <span class="doc-preview-icon">🦞</span>
+              <span class="doc-preview-badge pill pill-purple">Prenotazione</span>
+            </div>
+            <div class="doc-card-body">
+              <div class="doc-card-name">Barceloneta — Prenotazione ristorante</div>
+              <div class="doc-card-meta">
+                PDF · 62 KB
+                <span class="doc-card-meta-dot"></span>
+                16 Lug 2026
+              </div>
+              <div class="doc-card-footer">
+                <div class="doc-card-uploader">
+                  <div class="avatar av-s">S</div>
+                  Sara
+                </div>
+                <button class="doc-action-btn" title="Scarica">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div style="height: 40px;"></div>
+
+    </div><!-- /container -->
+  </main>
+
+  <script>
+    // Filter pill interaction
+    document.querySelectorAll('.filter-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+      });
+    });
+  </script>
+
+</body>
+</html>

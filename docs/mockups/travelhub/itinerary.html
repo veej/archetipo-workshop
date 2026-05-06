@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Itinerario — Estate Spagnola 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    /* ── DAY SELECTOR ── */
+    .day-selector-wrap {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .day-selector-wrap::-webkit-scrollbar { display: none; }
+    .day-selector {
+      display: flex;
+      gap: 0;
+      padding: 0 var(--pad);
+      max-width: var(--max-w);
+      margin: 0 auto;
+    }
+    .day-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 14px 20px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      white-space: nowrap;
+      gap: 3px;
+      min-width: 80px;
+    }
+    .day-tab:hover { background: var(--bg-hover); }
+    .day-tab.active {
+      border-bottom-color: var(--coral);
+      color: var(--coral);
+    }
+    .day-tab.past { opacity: 0.55; }
+    .day-tab-day {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--t3);
+    }
+    .day-tab.active .day-tab-day { color: var(--coral); }
+    .day-tab-date {
+      font-size: 20px;
+      font-family: var(--font-display);
+      font-weight: 400;
+      color: var(--t1);
+    }
+    .day-tab.active .day-tab-date { color: var(--coral); }
+    .day-tab-count {
+      font-size: 11px;
+      color: var(--t4);
+    }
+    .day-tab.active .day-tab-count { color: var(--coral-mid); }
+
+    /* ── ITINERARY LAYOUT ── */
+    .itin-layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 32px;
+      padding: 40px 0 64px;
+    }
+    @media (max-width: 900px) { .itin-layout { grid-template-columns: 1fr; } }
+
+    /* ── DAY HEADER ── */
+    .itin-day-hdr {
+      margin-bottom: 32px;
+    }
+    .itin-day-eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      color: var(--coral);
+      margin-bottom: 6px;
+    }
+    .itin-day-title {
+      font-family: var(--font-display);
+      font-size: 30px;
+      font-weight: 400;
+      letter-spacing: -0.4px;
+      color: var(--t1);
+      margin-bottom: 8px;
+    }
+    .itin-day-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--t3);
+    }
+
+    /* ── STOP CARDS ── */
+    .stops-list { display: flex; flex-direction: column; gap: 16px; }
+
+    .stop-item {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    .stop-time-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      padding-top: 20px;
+      gap: 6px;
+    }
+    .stop-time {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--t2);
+    }
+    .stop-dur {
+      font-size: 11px;
+      color: var(--t4);
+      text-align: right;
+    }
+
+    .stop-card-full {
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      background: var(--bg-surface);
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .stop-card-full:hover { box-shadow: var(--shadow-md); border-color: var(--gray-300, #CCCCCC); }
+    .stop-card-full.is-active {
+      border-color: var(--coral-mid);
+      box-shadow: 0 2px 16px rgba(232,79,71,0.1);
+    }
+    .stop-card-full.is-done { opacity: 0.65; }
+
+    .stop-card-top {
+      padding: 16px 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .stop-type-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--r-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 20px;
+    }
+    .stop-type-sight    { background: var(--blue-light); }
+    .stop-type-food     { background: var(--orange-light); }
+    .stop-type-hotel    { background: var(--purple-light); }
+    .stop-type-transport{ background: var(--green-light); }
+
+    .stop-main { flex: 1; min-width: 0; }
+    .stop-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--t1);
+      margin-bottom: 4px;
+    }
+    .stop-location {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      color: var(--t3);
+    }
+    .stop-location svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+    .stop-card-body {
+      padding: 0 18px 16px;
+      border-top: 1px solid var(--border);
+      margin-top: 0;
+    }
+    .stop-notes {
+      font-size: 13px;
+      color: var(--t2);
+      line-height: 1.6;
+      padding-top: 14px;
+    }
+    .stop-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding-top: 12px;
+    }
+
+    /* ADD STOP BUTTON */
+    .add-stop-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 18px;
+      border: 2px dashed var(--border);
+      border-radius: var(--r-lg);
+      color: var(--t3);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-top: 8px;
+    }
+    .add-stop-btn:hover {
+      border-color: var(--coral);
+      color: var(--coral);
+      background: var(--coral-light);
+    }
+    .add-stop-btn svg { width: 18px; height: 18px; }
+
+    /* SIDEBAR INFO */
+    .itin-sidebar { display: flex; flex-direction: column; gap: 20px; }
+    .info-card { padding: 20px; }
+    .info-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--t1);
+      margin-bottom: 16px;
+    }
+    .info-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-row svg { width: 15px; height: 15px; color: var(--t3); flex-shrink: 0; margin-top: 1px; }
+    .info-row-label { color: var(--t3); font-weight: 500; min-width: 70px; }
+    .info-row-value { color: var(--t1); }
+
+    .weather-widget {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px;
+    }
+    .weather-icon { font-size: 40px; line-height: 1; }
+    .weather-temp {
+      font-family: var(--font-display);
+      font-size: 32px;
+      color: var(--t1);
+      line-height: 1;
+    }
+    .weather-desc { font-size: 13px; color: var(--t3); margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+  <!-- GLOBAL NAV -->
+  <nav class="gnav">
+    <div class="container">
+      <a href="index.html" class="gnav-logo">
+        <svg viewBox="0 0 26 26" fill="none">
+          <path d="M13 2C8.029 2 4 6.03 4 11c0 7.5 9 15 9 15s9-7.5 9-15c0-4.97-4.029-9-9-9z" fill="currentColor"/>
+          <circle cx="13" cy="11" r="3.2" fill="white"/>
+        </svg>
+        TravelHub
+      </a>
+      <div class="gnav-right">
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="notif-dot"></span>
+        </button>
+        <div class="avatar av-36 av-m">M</div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- TRIP HERO -->
+  <div class="trip-hero">
+    <div class="trip-hero-bg grad-bcn"></div>
+    <div class="trip-hero-overlay"></div>
+    <div class="trip-hero-inner">
+      <div class="container">
+        <div>
+          <a href="index.html" class="back-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+            </svg>
+            I miei viaggi
+          </a>
+          <p class="trip-hero-dest">Barcellona, Spagna</p>
+          <h1 class="trip-hero-name">Estate Spagnola 2026</h1>
+          <div class="trip-hero-dates">
+            <span>15–22 Luglio 2026</span>
+            <span>·</span>
+            <span>8 giorni · 22 tappe</span>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px; flex-shrink:0;">
+          <span class="pill pill-green">● In corso</span>
+          <a href="trip-dashboard.html" class="btn btn-outline btn-sm" style="background:rgba(255,255,255,0.15); border-color:rgba(255,255,255,0.4); color:white;">
+            + Aggiungi tappa
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRIP SUBNAV -->
+  <nav class="subnav">
+    <div class="container">
+      <a href="trip-dashboard.html" class="subnav-tab">Panoramica</a>
+      <a href="itinerary.html"      class="subnav-tab active">Itinerario</a>
+      <a href="documents.html"      class="subnav-tab">Documenti</a>
+      <a href="expenses.html"       class="subnav-tab">Spese</a>
+    </div>
+  </nav>
+
+  <!-- DAY SELECTOR -->
+  <div class="day-selector-wrap">
+    <div class="day-selector">
+      <div class="day-tab past">
+        <span class="day-tab-day">Mar</span>
+        <span class="day-tab-date">15</span>
+        <span class="day-tab-count">3 tappe</span>
+      </div>
+      <div class="day-tab past">
+        <span class="day-tab-day">Mer</span>
+        <span class="day-tab-date">16</span>
+        <span class="day-tab-count">2 tappe</span>
+      </div>
+      <div class="day-tab active">
+        <span class="day-tab-day">Gio</span>
+        <span class="day-tab-date">17</span>
+        <span class="day-tab-count">4 tappe</span>
+      </div>
+      <div class="day-tab">
+        <span class="day-tab-day">Ven</span>
+        <span class="day-tab-date">18</span>
+        <span class="day-tab-count">3 tappe</span>
+      </div>
+      <div class="day-tab">
+        <span class="day-tab-day">Sab</span>
+        <span class="day-tab-date">19</span>
+        <span class="day-tab-count">2 tappe</span>
+      </div>
+      <div class="day-tab">
+        <span class="day-tab-day">Dom</span>
+        <span class="day-tab-date">20</span>
+        <span class="day-tab-count">3 tappe</span>
+      </div>
+      <div class="day-tab">
+        <span class="day-tab-day">Lun</span>
+        <span class="day-tab-date">21</span>
+        <span class="day-tab-count">2 tappe</span>
+      </div>
+      <div class="day-tab">
+        <span class="day-tab-day">Mar</span>
+        <span class="day-tab-date">22</span>
+        <span class="day-tab-count">1 tappa</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <div class="container">
+      <div class="itin-layout">
+
+        <!-- LEFT: Stops -->
+        <div>
+          <div class="itin-day-hdr fu">
+            <p class="itin-day-eyebrow">Giorno 3 · Oggi</p>
+            <h2 class="itin-day-title">Giovedì 17 Luglio</h2>
+            <div class="itin-day-meta">
+              <span>4 tappe</span>
+              <span>·</span>
+              <span>~12 km a piedi</span>
+              <span>·</span>
+              <span>Sole, 28°C</span>
+            </div>
+          </div>
+
+          <div class="stops-list">
+
+            <!-- Stop 1: Parc Güell (done) -->
+            <div class="stop-item fu d1">
+              <div class="stop-time-col">
+                <span class="stop-time">10:00</span>
+                <span class="stop-dur">2h</span>
+              </div>
+              <div class="stop-card-full is-done">
+                <div class="stop-card-top">
+                  <div class="stop-type-icon stop-type-sight">🌿</div>
+                  <div class="stop-main">
+                    <div class="stop-title">Parc Güell</div>
+                    <div class="stop-location">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                      </svg>
+                      Carrer d'Olot, s/n · Gràcia
+                    </div>
+                  </div>
+                  <span class="pill pill-green">✓ Fatto</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stop 2: Sagrada Família (active) -->
+            <div class="stop-item fu d2">
+              <div class="stop-time-col">
+                <span class="stop-time" style="color:var(--coral)">14:00</span>
+                <span class="stop-dur">2.5h</span>
+              </div>
+              <div class="stop-card-full is-active">
+                <div class="stop-card-top">
+                  <div class="stop-type-icon stop-type-sight">⛪</div>
+                  <div class="stop-main">
+                    <div class="stop-title">Sagrada Família</div>
+                    <div class="stop-location">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                      </svg>
+                      Carrer de Mallorca, 401 · Eixample
+                    </div>
+                  </div>
+                  <span class="pill pill-coral" style="flex-shrink:0;">● Ora</span>
+                </div>
+                <div class="stop-card-body">
+                  <p class="stop-notes">🎟 I biglietti sono già stati acquistati online. Mostrate il PDF alla cassa — potete trovarlo nella sezione Documenti. Accesso dalla facciata della Natività (est).</p>
+                  <div class="stop-tags">
+                    <span class="pill pill-blue">Prenotazione richiesta</span>
+                    <span class="pill pill-gray">Biglietti in Documenti</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stop 3: Quartiere Gotico -->
+            <div class="stop-item fu d3">
+              <div class="stop-time-col">
+                <span class="stop-time">16:30</span>
+                <span class="stop-dur">1.5h</span>
+              </div>
+              <div class="stop-card-full">
+                <div class="stop-card-top">
+                  <div class="stop-type-icon stop-type-sight">🏛️</div>
+                  <div class="stop-main">
+                    <div class="stop-title">Quartiere Gotico</div>
+                    <div class="stop-location">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                      </svg>
+                      Barri Gòtic · Città Vecchia
+                    </div>
+                  </div>
+                </div>
+                <div class="stop-card-body">
+                  <p class="stop-notes">Passeggiata libera tra i vicoli medioevali. Tappa obbligatoria: Pont del Bisbe e Plaça Reial. Ottimo per shopping e gelato.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stop 4: Cena Barceloneta -->
+            <div class="stop-item fu d4">
+              <div class="stop-time-col">
+                <span class="stop-time">20:00</span>
+                <span class="stop-dur">2h</span>
+              </div>
+              <div class="stop-card-full">
+                <div class="stop-card-top">
+                  <div class="stop-type-icon stop-type-food">🦞</div>
+                  <div class="stop-main">
+                    <div class="stop-title">Cena a Barceloneta</div>
+                    <div class="stop-location">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                      </svg>
+                      Platja de la Barceloneta · El Born
+                    </div>
+                  </div>
+                </div>
+                <div class="stop-card-body">
+                  <p class="stop-notes">🍽 Prenotazione confermata a nome "Marco G." per 4 persone. Conferma nella sezione Documenti. Specialità: paella e frutti di mare.</p>
+                  <div class="stop-tags">
+                    <span class="pill pill-orange">Prenotazione</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Add stop -->
+            <button class="add-stop-btn fu d5">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="16"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
+              </svg>
+              Aggiungi tappa
+            </button>
+
+          </div>
+        </div>
+
+        <!-- RIGHT SIDEBAR -->
+        <aside class="itin-sidebar">
+
+          <!-- Weather -->
+          <div class="card">
+            <div class="weather-widget fu">
+              <div class="weather-icon">☀️</div>
+              <div>
+                <div class="weather-temp">28°C</div>
+                <div class="weather-desc">Soleggiato · Barcellona</div>
+                <div style="font-size:12px; color:var(--t4); margin-top:4px;">Min 22° · Max 31°</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hotel info -->
+          <div class="card info-card fu d1">
+            <div class="info-card-title">Hotel stanotte</div>
+            <div style="font-size:16px; font-weight:600; margin-bottom:4px;">Hotel Arts Barcelona</div>
+            <div style="font-size:13px; color:var(--t3); margin-bottom:16px;">Carrer de la Marina, 19–21</div>
+            <div class="info-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <span class="info-row-label">Check-out</span>
+              <span class="info-row-value">22 Lug · 12:00</span>
+            </div>
+            <div class="info-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <span class="info-row-label">Codice</span>
+              <span class="info-row-value" style="font-weight:700; letter-spacing:1px;">BC-4821</span>
+            </div>
+            <a href="documents.html" style="display:block; margin-top:14px;" class="btn btn-outline btn-sm">
+              Apri conferma →
+            </a>
+          </div>
+
+          <!-- Next day preview -->
+          <div class="card info-card fu d2">
+            <div class="info-card-title">Domani — 18 Luglio</div>
+            <div class="info-row">
+              <span style="font-size:18px; line-height:1;">🚡</span>
+              <div>
+                <div style="font-size:13px; font-weight:600; color:var(--t1);">10:00 — Montjuïc</div>
+                <div style="font-size:12px; color:var(--t3);">Funicolare + Castello</div>
+              </div>
+            </div>
+            <div class="info-row">
+              <span style="font-size:18px; line-height:1;">🖼️</span>
+              <div>
+                <div style="font-size:13px; font-weight:600; color:var(--t1);">14:00 — MNAC</div>
+                <div style="font-size:12px; color:var(--t3);">Museo nazionale arte catalana</div>
+              </div>
+            </div>
+            <div class="info-row">
+              <span style="font-size:18px; line-height:1;">🍻</span>
+              <div>
+                <div style="font-size:13px; font-weight:600; color:var(--t1);">20:30 — Tapas El Xampanyet</div>
+                <div style="font-size:12px; color:var(--t3);">Carrer de Montcada, 22</div>
+              </div>
+            </div>
+          </div>
+
+        </aside>
+
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

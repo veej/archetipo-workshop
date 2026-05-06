@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estate Spagnola 2026 — TravelHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    /* ── DASHBOARD LAYOUT ── */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 32px;
+      padding: 36px 0 64px;
+    }
+    @media (max-width: 900px) { .dash-grid { grid-template-columns: 1fr; } }
+
+    /* ── DAY HEADER ── */
+    .day-hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      gap: 16px;
+    }
+    .day-title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: -0.3px;
+    }
+    .day-sub {
+      font-size: 13px;
+      color: var(--t3);
+      margin-top: 2px;
+    }
+    .day-progress {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .day-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gray-200);
+      transition: background 0.2s;
+    }
+    .day-dot.past    { background: var(--gray-400); }
+    .day-dot.active  { background: var(--coral); width: 20px; border-radius: 4px; }
+    .day-dot.future  { background: var(--gray-200); }
+
+    /* ── TIMELINE ── */
+    .timeline { display: flex; flex-direction: column; gap: 0; }
+    .timeline-item {
+      display: flex;
+      gap: 0;
+      position: relative;
+    }
+    .timeline-left {
+      width: 72px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 18px;
+    }
+    .timeline-time {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--t3);
+      margin-bottom: 8px;
+      white-space: nowrap;
+    }
+    .timeline-item.active .timeline-time { color: var(--coral); }
+
+    .timeline-dot-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+    .timeline-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--gray-200);
+      border: 2px solid white;
+      box-shadow: 0 0 0 2px var(--gray-200);
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    .timeline-item.done .timeline-dot {
+      background: var(--green);
+      box-shadow: 0 0 0 2px var(--green-light);
+    }
+    .timeline-item.active .timeline-dot {
+      background: var(--coral);
+      box-shadow: 0 0 0 3px var(--coral-light);
+      width: 16px;
+      height: 16px;
+    }
+    .timeline-line {
+      width: 2px;
+      flex: 1;
+      min-height: 24px;
+      background: var(--gray-200);
+      margin-top: 2px;
+    }
+    .timeline-item.done .timeline-line { background: var(--green-light); }
+    .timeline-item.active .timeline-line { background: var(--coral-light); }
+    .timeline-item:last-child .timeline-line { display: none; }
+
+    .timeline-content {
+      flex: 1;
+      padding: 12px 0 24px 16px;
+    }
+    .stop-card {
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 16px 18px;
+      background: var(--bg-surface);
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .stop-card:hover { box-shadow: var(--shadow-md); }
+    .timeline-item.active .stop-card {
+      border-color: var(--coral-mid);
+      background: var(--coral-light);
+      box-shadow: 0 2px 12px rgba(232,79,71,0.12);
+    }
+    .timeline-item.done .stop-card {
+      opacity: 0.7;
+    }
+    .stop-hdr {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .stop-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--t1);
+    }
+    .stop-addr {
+      font-size: 13px;
+      color: var(--t3);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .stop-addr svg { width: 12px; height: 12px; flex-shrink: 0; }
+    .stop-note {
+      font-size: 13px;
+      color: var(--t2);
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+    }
+
+    /* ── UPCOMING DAYS ── */
+    .upcoming-days { margin-top: 40px; }
+    .upcoming-days .sec-hdr { margin-bottom: 16px; }
+    .upcoming-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 700px) { .upcoming-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .day-card {
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .day-card:hover { border-color: var(--coral-mid); box-shadow: var(--shadow-sm); }
+    .day-card-date {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--t3);
+      margin-bottom: 4px;
+    }
+    .day-card-stop {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--t1);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .day-card-count {
+      font-size: 12px;
+      color: var(--t3);
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Balance card */
+    .balance-card {
+      padding: 24px;
+    }
+    .balance-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--t3);
+      margin-bottom: 8px;
+    }
+    .balance-amount {
+      font-family: var(--font-display);
+      font-size: 40px;
+      font-weight: 400;
+      letter-spacing: -1px;
+      line-height: 1;
+      margin-bottom: 4px;
+      color: var(--green);
+    }
+    .balance-amount.negative { color: var(--coral); }
+    .balance-desc {
+      font-size: 13px;
+      color: var(--t3);
+      margin-bottom: 20px;
+    }
+    .balance-breakdown { border-top: 1px solid var(--border); padding-top: 16px; }
+    .balance-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 0;
+    }
+    .balance-row-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .balance-row-name { font-size: 13px; font-weight: 500; }
+    .balance-row-amount { font-size: 13px; font-weight: 600; }
+    .amount-pos { color: var(--green); }
+    .amount-neg { color: var(--coral); }
+
+    /* Quick docs card */
+    .side-card { padding: 20px 22px; }
+    .side-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--t1);
+      margin-bottom: 16px;
+    }
+    .doc-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .doc-row:last-child { border-bottom: none; }
+    .doc-row:hover { opacity: 0.75; }
+    .doc-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--r-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .doc-icon svg { width: 18px; height: 18px; }
+    .doc-icon-flight { background: var(--blue-light); color: var(--blue); }
+    .doc-icon-hotel  { background: var(--orange-light); color: var(--orange); }
+    .doc-icon-other  { background: var(--gray-100); color: var(--t3); }
+    .doc-info { flex: 1; min-width: 0; }
+    .doc-name {
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .doc-meta { font-size: 12px; color: var(--t3); margin-top: 2px; }
+
+    /* Participants card */
+    .participant-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .participant-row:last-child { border-bottom: none; }
+    .participant-info { flex: 1; }
+    .participant-name { font-size: 14px; font-weight: 500; }
+    .participant-role { font-size: 12px; color: var(--t3); margin-top: 1px; }
+    .invite-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--coral);
+      padding: 12px 0 0;
+      cursor: pointer;
+    }
+    .invite-link svg { width: 14px; height: 14px; }
+  </style>
+</head>
+<body>
+
+  <!-- GLOBAL NAV -->
+  <nav class="gnav">
+    <div class="container">
+      <a href="index.html" class="gnav-logo">
+        <svg viewBox="0 0 26 26" fill="none">
+          <path d="M13 2C8.029 2 4 6.03 4 11c0 7.5 9 15 9 15s9-7.5 9-15c0-4.97-4.029-9-9-9z" fill="currentColor"/>
+          <circle cx="13" cy="11" r="3.2" fill="white"/>
+        </svg>
+        TravelHub
+      </a>
+      <div class="gnav-right">
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="notif-dot"></span>
+        </button>
+        <div class="avatar av-36 av-m">M</div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- TRIP HERO -->
+  <div class="trip-hero">
+    <div class="trip-hero-bg grad-bcn"></div>
+    <div class="trip-hero-overlay"></div>
+    <div class="trip-hero-inner">
+      <div class="container">
+        <div>
+          <a href="index.html" class="back-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+            </svg>
+            I miei viaggi
+          </a>
+          <p class="trip-hero-dest">Barcellona, Spagna</p>
+          <h1 class="trip-hero-name">Estate Spagnola 2026</h1>
+          <div class="trip-hero-dates">
+            <span>15–22 Luglio 2026</span>
+            <span>·</span>
+            <span>Giorno 3 di 8</span>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px; flex-shrink:0;">
+          <span class="pill pill-green">● In corso</span>
+          <div class="avatar-stack">
+            <div class="avatar av-32 av-m">M</div>
+            <div class="avatar av-32 av-s">S</div>
+            <div class="avatar av-32 av-l">L</div>
+            <div class="avatar av-32 av-g">G</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRIP SUBNAV -->
+  <nav class="subnav">
+    <div class="container">
+      <a href="trip-dashboard.html" class="subnav-tab active">Panoramica</a>
+      <a href="itinerary.html"      class="subnav-tab">Itinerario</a>
+      <a href="documents.html"      class="subnav-tab">Documenti</a>
+      <a href="expenses.html"       class="subnav-tab">Spese</a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <div class="container">
+      <div class="dash-grid">
+
+        <!-- LEFT COLUMN -->
+        <div>
+
+          <!-- TODAY -->
+          <div class="day-hdr fu">
+            <div>
+              <h2 class="day-title">Oggi — 17 Luglio</h2>
+              <p class="day-sub">3 tappe in programma</p>
+            </div>
+            <div class="day-progress">
+              <div class="day-dot past"></div>
+              <div class="day-dot past"></div>
+              <div class="day-dot active"></div>
+              <div class="day-dot future"></div>
+              <div class="day-dot future"></div>
+              <div class="day-dot future"></div>
+              <div class="day-dot future"></div>
+              <div class="day-dot future"></div>
+            </div>
+          </div>
+
+          <div class="timeline fu d1">
+
+            <!-- Stop 1: Parc Güell (past) -->
+            <div class="timeline-item done">
+              <div class="timeline-left">
+                <span class="timeline-time">10:00</span>
+                <div class="timeline-dot-wrap">
+                  <div class="timeline-dot"></div>
+                  <div class="timeline-line"></div>
+                </div>
+              </div>
+              <div class="timeline-content">
+                <div class="stop-card">
+                  <div class="stop-hdr">
+                    <div>
+                      <div class="stop-name">Parc Güell</div>
+                      <div class="stop-addr" style="margin-top:4px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        Carrer d'Olot, s/n · Gràcia
+                      </div>
+                    </div>
+                    <span class="pill pill-green" style="flex-shrink:0;">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:10px;height:10px;">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      Completato
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stop 2: Sagrada Família (active) -->
+            <div class="timeline-item active">
+              <div class="timeline-left">
+                <span class="timeline-time">14:00</span>
+                <div class="timeline-dot-wrap">
+                  <div class="timeline-dot"></div>
+                  <div class="timeline-line"></div>
+                </div>
+              </div>
+              <div class="timeline-content">
+                <div class="stop-card">
+                  <div class="stop-hdr">
+                    <div>
+                      <div class="stop-name">Sagrada Família</div>
+                      <div class="stop-addr" style="margin-top:4px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        Carrer de Mallorca, 401 · Eixample
+                      </div>
+                    </div>
+                    <span class="pill pill-coral" style="flex-shrink:0;">● Ora</span>
+                  </div>
+                  <div class="stop-note">🎟 Biglietti già acquistati — mostra il PDF dalla sezione Documenti all'ingresso.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stop 3: Quartiere Gotico (upcoming) -->
+            <div class="timeline-item">
+              <div class="timeline-left">
+                <span class="timeline-time">16:30</span>
+                <div class="timeline-dot-wrap">
+                  <div class="timeline-dot"></div>
+                  <div class="timeline-line"></div>
+                </div>
+              </div>
+              <div class="timeline-content">
+                <div class="stop-card">
+                  <div class="stop-hdr">
+                    <div>
+                      <div class="stop-name">Quartiere Gotico</div>
+                      <div class="stop-addr" style="margin-top:4px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        Barri Gòtic · Città Vecchia
+                      </div>
+                    </div>
+                    <span class="pill pill-gray" style="flex-shrink:0;">Prossimo</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stop 4: Cena (upcoming) -->
+            <div class="timeline-item">
+              <div class="timeline-left">
+                <span class="timeline-time">20:00</span>
+                <div class="timeline-dot-wrap">
+                  <div class="timeline-dot"></div>
+                  <div class="timeline-line"></div>
+                </div>
+              </div>
+              <div class="timeline-content">
+                <div class="stop-card">
+                  <div class="stop-hdr">
+                    <div>
+                      <div class="stop-name">Cena a Barceloneta</div>
+                      <div class="stop-addr" style="margin-top:4px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        Platja de la Barceloneta
+                      </div>
+                    </div>
+                    <span class="pill pill-gray" style="flex-shrink:0;">Prossimo</span>
+                  </div>
+                  <div class="stop-note">🍽 Prenotazione a nome "Marco G." — conferma nella sezione Documenti.</div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /timeline -->
+
+          <!-- UPCOMING DAYS -->
+          <div class="upcoming-days fu d2">
+            <div class="sec-hdr">
+              <h3 class="sec-title">Prossimi giorni</h3>
+              <a href="itinerary.html" class="sec-link">Itinerario completo →</a>
+            </div>
+            <div class="upcoming-grid">
+              <div class="day-card">
+                <div class="day-card-date">Dom 18 Lug</div>
+                <div class="day-card-stop">Montjuïc + MNAC</div>
+                <div class="day-card-count">3 tappe</div>
+              </div>
+              <div class="day-card">
+                <div class="day-card-date">Lun 19 Lug</div>
+                <div class="day-card-stop">El Born + Picasso</div>
+                <div class="day-card-count">2 tappe</div>
+              </div>
+              <div class="day-card">
+                <div class="day-card-date">Mar 20 Lug</div>
+                <div class="day-card-stop">Spiaggia + Aperitivo</div>
+                <div class="day-card-count">2 tappe</div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /left col -->
+
+        <!-- RIGHT SIDEBAR -->
+        <aside class="sidebar">
+
+          <!-- Balance card -->
+          <div class="card balance-card fu d1">
+            <div class="balance-label">Il tuo saldo</div>
+            <div class="balance-amount">+€810</div>
+            <div class="balance-desc">hai da ricevere dal gruppo</div>
+            <div class="balance-breakdown">
+              <div class="balance-row">
+                <div class="balance-row-left">
+                  <div class="avatar av-28 av-s">S</div>
+                  <span class="balance-row-name">Sara</span>
+                </div>
+                <span class="balance-row-amount amount-pos">→ €210</span>
+              </div>
+              <div class="balance-row">
+                <div class="balance-row-left">
+                  <div class="avatar av-28 av-l">L</div>
+                  <span class="balance-row-name">Luca</span>
+                </div>
+                <span class="balance-row-amount amount-pos">→ €330</span>
+              </div>
+              <div class="balance-row">
+                <div class="balance-row-left">
+                  <div class="avatar av-28 av-g">G</div>
+                  <span class="balance-row-name">Giulia</span>
+                </div>
+                <span class="balance-row-amount amount-pos">→ €270</span>
+              </div>
+            </div>
+            <a href="expenses.html" class="btn btn-outline btn-sm" style="width:100%; margin-top:16px; justify-content:center;">
+              Gestisci spese →
+            </a>
+          </div>
+
+          <!-- Quick documents -->
+          <div class="card side-card fu d2">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+              <span class="side-card-title">Documenti recenti</span>
+              <a href="documents.html" class="sec-link">Tutti →</a>
+            </div>
+            <div class="doc-row">
+              <div class="doc-icon doc-icon-flight">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 2c-2-2-4-2-5.5-.5L10 5 1.8 6.2c-.5.1-.9.5-.9 1 0 .3.1.5.3.7l4.7 4.7c.3.3.3.8 0 1.1l-3 3c-.3.3-.3.8 0 1.1l.8.8c.3.3.8.3 1.1 0l3-3c.3-.3.8-.3 1.1 0l4.7 4.7c.2.2.5.3.7.3.5 0 .9-.4 1-.9z"/>
+                </svg>
+              </div>
+              <div class="doc-info">
+                <div class="doc-name">Biglietti Sagrada Família</div>
+                <div class="doc-meta">Prenotazione · 14 Lug</div>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-icon doc-icon-flight">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 2c-2-2-4-2-5.5-.5L10 5 1.8 6.2c-.5.1-.9.5-.9 1 0 .3.1.5.3.7l4.7 4.7c.3.3.3.8 0 1.1l-3 3c-.3.3-.3.8 0 1.1l.8.8c.3.3.8.3 1.1 0l3-3c.3-.3.8-.3 1.1 0l4.7 4.7c.2.2.5.3.7.3.5 0 .9-.4 1-.9z"/>
+                </svg>
+              </div>
+              <div class="doc-info">
+                <div class="doc-name">Ryanair FR5234 — andata</div>
+                <div class="doc-meta">Volo · 10 Lug</div>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-icon doc-icon-hotel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+              </div>
+              <div class="doc-info">
+                <div class="doc-name">Hotel Arts — conferma</div>
+                <div class="doc-meta">Hotel · 10 Lug</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Participants -->
+          <div class="card side-card fu d3">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+              <span class="side-card-title">Il gruppo</span>
+              <span class="pill pill-gray">4 persone</span>
+            </div>
+            <div class="participant-row">
+              <div class="avatar av-36 av-m">M</div>
+              <div class="participant-info">
+                <div class="participant-name">Marco G.</div>
+                <div class="participant-role">Organizzatore · Tu</div>
+              </div>
+            </div>
+            <div class="participant-row">
+              <div class="avatar av-36 av-s">S</div>
+              <div class="participant-info">
+                <div class="participant-name">Sara B.</div>
+                <div class="participant-role">Partecipante</div>
+              </div>
+            </div>
+            <div class="participant-row">
+              <div class="avatar av-36 av-l">L</div>
+              <div class="participant-info">
+                <div class="participant-name">Luca M.</div>
+                <div class="participant-role">Partecipante</div>
+              </div>
+            </div>
+            <div class="participant-row">
+              <div class="avatar av-36 av-g">G</div>
+              <div class="participant-info">
+                <div class="participant-name">Giulia R.</div>
+                <div class="participant-role">Partecipante</div>
+              </div>
+            </div>
+            <div class="invite-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Invita partecipante
+            </div>
+          </div>
+
+        </aside><!-- /sidebar -->
+      </div><!-- /dash-grid -->
+    </div><!-- /container -->
+  </main>
+
+</body>
+</html>

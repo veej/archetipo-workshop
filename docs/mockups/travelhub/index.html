@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TravelHub — I tuoi viaggi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    /* ── PAGE HERO ── */
+    .page-hero {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 56px 0 48px;
+    }
+    .hero-eyebrow {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--coral);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: 44px;
+      line-height: 1.12;
+      letter-spacing: -0.8px;
+      color: var(--t1);
+      margin-bottom: 14px;
+    }
+    .hero-title em { font-style: italic; color: var(--coral); }
+    .hero-subtitle {
+      font-size: 16px;
+      color: var(--t3);
+      line-height: 1.6;
+      max-width: 440px;
+      margin-bottom: 36px;
+    }
+    .hero-stats {
+      display: flex;
+      gap: 40px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+    }
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 32px;
+      color: var(--t1);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--t3);
+    }
+
+    /* ── TRIPS SECTION ── */
+    .trips-section { padding: 48px 0 64px; }
+    .trips-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    @media (max-width: 1024px) { .trips-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px)  { .trips-grid { grid-template-columns: 1fr; } }
+
+    /* ── TRIP CARD ── */
+    .trip-card {
+      display: block;
+      cursor: pointer;
+    }
+    .trip-card-img {
+      height: 196px;
+      position: relative;
+      overflow: hidden;
+    }
+    .trip-card-fill {
+      position: absolute;
+      inset: 0;
+      transition: transform 0.4s ease;
+    }
+    .trip-card:hover .trip-card-fill { transform: scale(1.05); }
+    .trip-card-img::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 55%);
+      pointer-events: none;
+    }
+    /* Subtle diagonal texture overlay */
+    .trip-card-img::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .trip-card-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 2;
+    }
+    .trip-card-loc {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .trip-card-loc svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+    .trip-card-body { padding: 16px 18px 20px; }
+    .trip-dest {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      color: var(--t3);
+      margin-bottom: 4px;
+    }
+    .trip-name {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--t1);
+      margin-bottom: 8px;
+      letter-spacing: -0.2px;
+    }
+    .trip-dates {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      color: var(--t3);
+      margin-bottom: 16px;
+    }
+    .trip-dates svg { width: 13px; height: 13px; flex-shrink: 0; }
+    .trip-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ── NEW TRIP CARD ── */
+    .new-trip-card {
+      border: 2px dashed var(--border);
+      border-radius: var(--r-lg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      min-height: 320px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--t3);
+      text-align: center;
+      padding: 24px;
+    }
+    .new-trip-card:hover {
+      border-color: var(--coral);
+      color: var(--coral);
+      background: var(--coral-light);
+    }
+    .new-trip-card svg { width: 36px; height: 36px; transition: transform 0.2s; }
+    .new-trip-card:hover svg { transform: scale(1.1); }
+    .new-trip-label { font-size: 15px; font-weight: 600; }
+    .new-trip-hint { font-size: 13px; opacity: 0.7; }
+  </style>
+</head>
+<body>
+
+  <!-- GLOBAL NAV -->
+  <nav class="gnav">
+    <div class="container">
+      <a href="index.html" class="gnav-logo">
+        <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 2C8.029 2 4 6.03 4 11c0 7.5 9 15 9 15s9-7.5 9-15c0-4.97-4.029-9-9-9z" fill="currentColor"/>
+          <circle cx="13" cy="11" r="3.2" fill="white"/>
+        </svg>
+        TravelHub
+      </a>
+      <div class="gnav-right">
+        <button class="icon-btn" title="Notifiche">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="notif-dot"></span>
+        </button>
+        <div class="avatar av-36 av-m">M</div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PAGE HERO -->
+  <section class="page-hero">
+    <div class="container">
+      <p class="hero-eyebrow">Bentornato, Marco</p>
+      <h1 class="hero-title">I tuoi <em>viaggi</em></h1>
+      <p class="hero-subtitle">Tutti i dettagli di ogni avventura, sempre a portata di mano per il gruppo.</p>
+      <div class="hero-stats">
+        <div>
+          <div class="stat-value">3</div>
+          <div class="stat-label">viaggi attivi</div>
+        </div>
+        <div>
+          <div class="stat-value">12</div>
+          <div class="stat-label">amici coinvolti</div>
+        </div>
+        <div>
+          <div class="stat-value">1</div>
+          <div class="stat-label">in corso ora</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRIPS SECTION -->
+  <main>
+    <div class="trips-section">
+      <div class="container">
+        <div class="sec-hdr">
+          <h2 class="sec-title">Tutti i viaggi</h2>
+          <a href="create-trip.html" class="btn btn-primary btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Nuovo viaggio
+          </a>
+        </div>
+
+        <div class="trips-grid">
+
+          <!-- 1. BARCELLONA (in corso) -->
+          <a href="trip-dashboard.html" class="trip-card card card-lift fu">
+            <div class="trip-card-img">
+              <div class="trip-card-fill grad-bcn"></div>
+              <span class="trip-card-badge pill pill-green">● In corso</span>
+              <span class="trip-card-loc">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                Barcellona, Spagna
+              </span>
+            </div>
+            <div class="trip-card-body">
+              <p class="trip-dest">Estate in Europa</p>
+              <h3 class="trip-name">Estate Spagnola 2026</h3>
+              <p class="trip-dates">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                15–22 Luglio 2026 · Giorno 3 di 8
+              </p>
+              <div class="trip-card-footer">
+                <div class="avatar-stack">
+                  <div class="avatar av-28 av-m">M</div>
+                  <div class="avatar av-28 av-s">S</div>
+                  <div class="avatar av-28 av-l">L</div>
+                  <div class="avatar av-28 av-g">G</div>
+                </div>
+                <span class="pill pill-coral">4 partecipanti</span>
+              </div>
+            </div>
+          </a>
+
+          <!-- 2. PARIGI (prossimo) -->
+          <a href="#" class="trip-card card card-lift fu d1">
+            <div class="trip-card-img">
+              <div class="trip-card-fill grad-par"></div>
+              <span class="trip-card-badge pill pill-blue">Prossimo</span>
+              <span class="trip-card-loc">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                Parigi, Francia
+              </span>
+            </div>
+            <div class="trip-card-body">
+              <p class="trip-dest">Weekend romantico</p>
+              <h3 class="trip-name">Settembre a Parigi</h3>
+              <p class="trip-dates">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                12–14 Settembre 2026
+              </p>
+              <div class="trip-card-footer">
+                <div class="avatar-stack">
+                  <div class="avatar av-28 av-m">M</div>
+                  <div class="avatar av-28 av-s">S</div>
+                  <div class="avatar av-28 av-l">L</div>
+                </div>
+                <span class="pill pill-gray">3 partecipanti</span>
+              </div>
+            </div>
+          </a>
+
+          <!-- 3. AMSTERDAM (passato) -->
+          <a href="#" class="trip-card card card-lift fu d2">
+            <div class="trip-card-img">
+              <div class="trip-card-fill grad-ams"></div>
+              <span class="trip-card-badge pill pill-gray">Concluso</span>
+              <span class="trip-card-loc">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                Amsterdam, Paesi Bassi
+              </span>
+            </div>
+            <div class="trip-card-body">
+              <p class="trip-dest">Primavera nordica</p>
+              <h3 class="trip-name">Tulipani in fiore</h3>
+              <p class="trip-dates">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                3–7 Aprile 2026
+              </p>
+              <div class="trip-card-footer">
+                <div class="avatar-stack">
+                  <div class="avatar av-28 av-m">M</div>
+                  <div class="avatar av-28 av-s">S</div>
+                  <div class="avatar av-28 av-g">G</div>
+                </div>
+                <span class="pill pill-gray">3 partecipanti</span>
+              </div>
+            </div>
+          </a>
+
+          <!-- 4. NUOVO VIAGGIO -->
+          <a href="create-trip.html" class="new-trip-card fu d3">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="16"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            <p class="new-trip-label">Crea un nuovo viaggio</p>
+            <p class="new-trip-hint">Aggiungi itinerario, documenti e spese</p>
+          </a>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

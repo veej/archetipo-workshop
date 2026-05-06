@@ -36,8 +36,20 @@ model Trip {
   itineraryStops ItineraryStop[]
   documents      Document[]
   expenses       Expense[]
+  invites        TripInvite[]
 
   @@map("trips")
+}
+
+model TripInvite {
+  id        String   @id @default(uuid())
+  tripId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@map("trip_invites")
 }
 
 model TripParticipant {

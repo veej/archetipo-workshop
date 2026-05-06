@@ -116,7 +116,7 @@ After implementing this story, qualsiasi partecipante del viaggio può aprire la
 
 #### US-004: Link di invito al viaggio
 
-**Epic:** EP-002 | **Priority:** HIGH | **Story Points:** 5 | **Status:** PLANNED
+**Epic:** EP-002 | **Priority:** HIGH | **Story Points:** 5 | **Status:** REVIEW
 
 **Story**
 Come Marco (Coordinatore),
@@ -137,7 +137,7 @@ After implementing this story, un organizzatore può generare un link di invito 
 
 #### US-005: Accettazione invito e ingresso nel viaggio
 
-**Epic:** EP-002 | **Priority:** HIGH | **Story Points:** 3
+**Epic:** EP-002 | **Priority:** HIGH | **Story Points:** 3 | **Status:** PLANNED
 
 **Extends existing boilerplate: OAuth callback handler**
 

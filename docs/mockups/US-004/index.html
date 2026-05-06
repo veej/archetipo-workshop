@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>US-004 — Combriccola: Partecipanti e Link di Invito</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    /* ───────── Design Tokens (mirrored from US-003) ───────── */
+    :root {
+      --th-primary:       #E55A4E;
+      --th-primary-hover: #C94A40;
+      --th-primary-soft:  #FCE9E6;
+      --th-primary-fg:    #FFFFFF;
+
+      --th-bg:            #FAFAF7;
+      --th-surface:       #FFFFFF;
+      --th-surface-2:     #F6F4F0;
+      --th-fg:            #1B1A19;
+      --th-fg-muted:      #6E6A66;
+      --th-fg-subtle:     #A09C97;
+      --th-border:        #E8E4DE;
+      --th-border-strong: #D8D2C8;
+      --th-ring:          rgba(229, 90, 78, 0.35);
+
+      --th-success:       #2F8A5F;
+      --th-success-soft:  #E5F2EC;
+      --th-warning:       #B8761E;
+      --th-warning-soft:  #FBF1DD;
+      --th-danger:        #C44A40;
+      --th-danger-soft:   #FCE9E6;
+      --th-info:          #2A6FDB;
+      --th-info-soft:     #E4EDFB;
+
+      --th-radius-sm: 6px;
+      --th-radius:    10px;
+      --th-radius-md: 12px;
+      --th-radius-lg: 16px;
+
+      --th-shadow-xs: 0 1px 2px rgba(20,16,12,0.04);
+      --th-shadow-sm: 0 1px 3px rgba(20,16,12,0.06), 0 1px 2px rgba(20,16,12,0.04);
+      --th-shadow-md: 0 4px 14px rgba(20,16,12,0.08), 0 2px 4px rgba(20,16,12,0.04);
+      --th-shadow-lg: 0 12px 32px rgba(20,16,12,0.10), 0 4px 12px rgba(20,16,12,0.05);
+
+      --th-font-sans:    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --th-font-display: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    }
+
+    /* ───────── Base ───────── */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--th-bg); color: var(--th-fg); font-family: var(--th-font-sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    button { font-family: inherit; cursor: pointer; }
+    a { color: inherit; text-decoration: none; }
+    h1, h2, h3, h4 { font-family: var(--th-font-display); font-weight: 700; letter-spacing: -0.02em; margin: 0; color: var(--th-fg); }
+    p { margin: 0; }
+
+    /* ───────── Scenario bar ───────── */
+    .scenario-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      background: var(--th-fg);
+      padding: 10px 20px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .scenario-bar .label { color: rgba(255,255,255,0.6); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+    .scenario-btn { padding: 5px 14px; font-size: 12.5px; font-weight: 600; border-radius: 6px; border: 1.5px solid rgba(255,255,255,0.15); background: transparent; color: rgba(255,255,255,0.65); cursor: pointer; transition: all .12s; white-space: nowrap; }
+    .scenario-btn:hover { border-color: rgba(255,255,255,0.4); color: white; }
+    .scenario-btn.active { background: var(--th-primary); border-color: var(--th-primary); color: white; }
+    .scenario-desc { margin-left: auto; color: rgba(255,255,255,0.4); font-size: 11.5px; }
+    body { padding-top: 44px; }
+
+    /* ───────── App Header ───────── */
+    .th-header {
+      position: sticky; top: 44px; z-index: 40;
+      background: rgba(250,250,247,0.92);
+      backdrop-filter: blur(12px) saturate(150%);
+      border-bottom: 1px solid var(--th-border);
+    }
+    .th-header-row {
+      max-width: 1240px; margin: 0 auto;
+      padding: 14px 32px;
+      display: flex; align-items: center; gap: 24px;
+    }
+    .th-header-brand { display: flex; align-items: center; gap: 10px; font-family: var(--th-font-display); font-weight: 700; font-size: 17px; letter-spacing: -0.02em; }
+    .th-brand-mark { width: 30px; height: 30px; border-radius: 9px; background: var(--th-primary); color: white; display: grid; place-items: center; font-weight: 800; font-size: 14px; box-shadow: 0 6px 14px -4px rgba(229,90,78,0.55); }
+    .th-header-nav { display: flex; align-items: center; gap: 4px; margin-left: 8px; }
+    .th-header-nav-item { padding: 7px 12px; font-size: 13px; font-weight: 600; color: var(--th-fg-muted); border-radius: var(--th-radius-sm); border: none; background: transparent; cursor: pointer; transition: background .12s, color .12s; white-space: nowrap; }
+    .th-header-nav-item:hover { background: var(--th-surface-2); color: var(--th-fg); }
+    .th-header-nav-item.active { color: var(--th-fg); background: var(--th-surface-2); }
+    .th-header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .th-search { display: flex; align-items: center; gap: 8px; background: var(--th-surface); border: 1px solid var(--th-border); border-radius: var(--th-radius-sm); padding: 7px 11px; width: 240px; color: var(--th-fg-muted); }
+    .th-search input { border: none; outline: none; background: transparent; flex: 1; color: var(--th-fg); font-size: 13px; }
+    .th-search input::placeholder { color: var(--th-fg-subtle); }
+    .th-avatar { width: 32px; height: 32px; border-radius: 999px; display: grid; place-items: center; color: white; font-weight: 700; font-size: 11.5px; background: #D97757; }
+
+    /* ───────── Page Container ───────── */
+    .th-page { padding: 28px 32px 56px; max-width: 1240px; width: 100%; margin: 0 auto; }
+
+    /* ───────── Buttons ───────── */
+    .th-btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; border-radius: var(--th-radius-sm); border: 1px solid transparent; background: var(--th-surface); color: var(--th-fg); transition: background .12s, border-color .12s, color .12s, transform .06s; white-space: nowrap; }
+    .th-btn:active { transform: translateY(0.5px); }
+    .th-btn-primary { background: var(--th-primary); color: var(--th-primary-fg); border-color: var(--th-primary); }
+    .th-btn-primary:hover { background: var(--th-primary-hover); border-color: var(--th-primary-hover); }
+    .th-btn-outline { border-color: var(--th-border-strong); }
+    .th-btn-outline:hover { background: var(--th-surface-2); }
+    .th-btn-ghost { background: transparent; color: var(--th-fg-muted); }
+    .th-btn-ghost:hover { background: var(--th-surface-2); color: var(--th-fg); }
+    .th-btn-icon { width: 30px; height: 30px; padding: 0; justify-content: center; background: var(--th-surface); border: 1px solid var(--th-border); border-radius: var(--th-radius-sm); color: var(--th-fg-muted); display: inline-flex; align-items: center; }
+    .th-btn-icon:hover { background: var(--th-surface-2); color: var(--th-fg); }
+    .th-btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 6px; }
+    .th-btn-success { background: var(--th-success-soft); color: var(--th-success); border-color: transparent; }
+
+    /* ───────── Cards ───────── */
+    .th-card { background: var(--th-surface); border: 1px solid var(--th-border); border-radius: var(--th-radius); box-shadow: var(--th-shadow-xs); }
+
+    /* ───────── Badges ───────── */
+    .th-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; font-size: 11.5px; font-weight: 600; border-radius: 999px; background: var(--th-surface-2); color: var(--th-fg-muted); border: 1px solid var(--th-border); white-space: nowrap; flex-shrink: 0; }
+    .th-badge-primary { background: var(--th-primary-soft); color: var(--th-primary-hover); border-color: transparent; }
+    .th-badge-success { background: var(--th-success-soft); color: var(--th-success); border-color: transparent; }
+    .th-badge-warning { background: var(--th-warning-soft); color: var(--th-warning); border-color: transparent; }
+    .th-badge-info { background: var(--th-info-soft); color: var(--th-info); border-color: transparent; }
+    .th-badge-danger { background: var(--th-danger-soft); color: var(--th-danger); border-color: transparent; }
+
+    /* ═══════════════════════════════════════════════════════════
+       TRIP HERO
+    ══════════════════════════════════════════════════════════ */
+    .trip-hero {
+      display: flex;
+      overflow: hidden;
+      border-radius: var(--th-radius-lg);
+      min-height: 188px;
+    }
+    .trip-hero-cover {
+      width: 256px;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .trip-hero-cover svg { width: 100%; height: 100%; display: block; object-fit: cover; }
+    .trip-hero-body {
+      flex: 1;
+      padding: 20px 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      border-left: 1px solid var(--th-border);
+    }
+    .trip-hero-breadcrumb {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; color: var(--th-fg-muted); font-weight: 500;
+      margin-bottom: 4px;
+      cursor: pointer;
+      transition: color .12s;
+    }
+    .trip-hero-breadcrumb:hover { color: var(--th-fg); }
+    .trip-hero-name { font-size: 28px; line-height: 1.08; letter-spacing: -0.03em; }
+    .trip-hero-meta { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 6px; }
+    .trip-hero-meta-item { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--th-fg-muted); }
+    .trip-hero-footer {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: auto; padding-top: 14px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       TRIP NAVIGATION
+    ══════════════════════════════════════════════════════════ */
+    .trip-nav-wrapper {
+      margin: 16px 0 24px;
+      background: var(--th-surface);
+      border: 1px solid var(--th-border);
+      border-radius: var(--th-radius);
+      box-shadow: var(--th-shadow-xs);
+      display: flex;
+      align-items: stretch;
+      overflow: hidden;
+    }
+    .trip-nav-item {
+      padding: 11px 18px;
+      font-size: 13px; font-weight: 600;
+      color: var(--th-fg-muted);
+      border: none; background: transparent;
+      cursor: pointer;
+      position: relative;
+      transition: color .12s;
+      white-space: nowrap;
+    }
+    .trip-nav-item::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 14px; right: 14px;
+      height: 2px;
+      border-radius: 2px 2px 0 0;
+      background: transparent;
+      transition: background .12s;
+    }
+    .trip-nav-item:hover { color: var(--th-fg); }
+    .trip-nav-item:hover::after { background: var(--th-border-strong); }
+    .trip-nav-item.active { color: var(--th-primary-hover); }
+    .trip-nav-item.active::after { background: var(--th-primary); }
+
+    /* ═══════════════════════════════════════════════════════════
+       SECTION CARDS
+    ══════════════════════════════════════════════════════════ */
+    .section-card { display: flex; flex-direction: column; }
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px 12px;
+      border-bottom: 1px solid var(--th-border);
+    }
+    .section-title { font-size: 13.5px; font-family: var(--th-font-display); font-weight: 700; letter-spacing: -0.01em; }
+    .section-meta { font-size: 12px; color: var(--th-fg-muted); font-weight: 500; }
+    .section-body { padding: 16px 18px; flex: 1; }
+    .section-empty {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 28px 16px; text-align: center;
+    }
+    .section-empty-icon { color: var(--th-fg-subtle); margin-bottom: 10px; }
+    .section-empty-title { font-size: 13px; font-weight: 600; font-family: var(--th-font-display); color: var(--th-fg); margin-bottom: 4px; }
+    .section-empty-text { font-size: 12px; color: var(--th-fg-muted); max-width: 210px; line-height: 1.45; }
+
+    /* ═══════════════════════════════════════════════════════════
+       PARTICIPANTS PAGE LAYOUT
+    ══════════════════════════════════════════════════════════ */
+    .participants-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .participants-main { display: flex; flex-direction: column; gap: 18px; }
+
+    /* ═══════════════════════════════════════════════════════════
+       INVITE LINK SECTION
+    ══════════════════════════════════════════════════════════ */
+    .invite-section {
+      background: var(--th-surface);
+      border: 1px solid var(--th-border);
+      border-radius: var(--th-radius);
+      box-shadow: var(--th-shadow-xs);
+      overflow: hidden;
+    }
+    .invite-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px 12px;
+      border-bottom: 1px solid var(--th-border);
+    }
+    .invite-header-left { display: flex; align-items: center; gap: 10px; }
+    .invite-header-icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: var(--th-primary-soft);
+      color: var(--th-primary);
+      display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+    .invite-header-text {}
+    .invite-title { font-size: 13.5px; font-family: var(--th-font-display); font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; }
+    .invite-subtitle { font-size: 11.5px; color: var(--th-fg-muted); margin-top: 1px; }
+
+    /* Active link state */
+    .invite-body { padding: 16px 18px; }
+    .invite-link-row {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .invite-link-input-wrap {
+      flex: 1;
+      display: flex; align-items: center;
+      background: var(--th-bg);
+      border: 1px solid var(--th-border);
+      border-radius: var(--th-radius-sm);
+      padding: 8px 12px;
+      gap: 8px;
+      min-width: 0;
+    }
+    .invite-link-input-wrap svg { flex-shrink: 0; color: var(--th-fg-subtle); }
+    .invite-link-text {
+      flex: 1; min-width: 0;
+      font-size: 12.5px; font-weight: 500;
+      color: var(--th-fg);
+      font-variant-numeric: tabular-nums;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .invite-link-text .token-part { color: var(--th-fg-muted); }
+
+    .invite-copy-btn {
+      flex-shrink: 0;
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 14px; font-size: 13px; font-weight: 600;
+      border-radius: var(--th-radius-sm);
+      border: 1px solid var(--th-primary);
+      background: var(--th-primary);
+      color: white;
+      cursor: pointer;
+      transition: background .12s, border-color .12s, transform .06s;
+      white-space: nowrap;
+    }
+    .invite-copy-btn:hover { background: var(--th-primary-hover); border-color: var(--th-primary-hover); }
+    .invite-copy-btn:active { transform: translateY(0.5px); }
+    .invite-copy-btn.copied {
+      background: var(--th-success);
+      border-color: var(--th-success);
+    }
+
+    .invite-expiry-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 10px;
+    }
+    .invite-expiry-label {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11.5px; color: var(--th-fg-muted);
+    }
+    .invite-regen-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; font-size: 11.5px; font-weight: 600;
+      border-radius: 5px;
+      border: 1px solid var(--th-border-strong);
+      background: transparent;
+      color: var(--th-fg-muted);
+      cursor: pointer;
+      transition: background .12s, color .12s;
+    }
+    .invite-regen-btn:hover { background: var(--th-surface-2); color: var(--th-fg); }
+
+    /* Empty link state */
+    .invite-empty-body { padding: 24px 18px; }
+    .invite-empty-inner {
+      display: flex; align-items: center; gap: 16px;
+      background: var(--th-bg);
+      border: 1.5px dashed var(--th-border-strong);
+      border-radius: var(--th-radius);
+      padding: 18px 20px;
+    }
+    .invite-empty-icon-wrap {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: var(--th-surface-2);
+      color: var(--th-fg-subtle);
+      display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+    .invite-empty-text-wrap { flex: 1; min-width: 0; }
+    .invite-empty-title { font-size: 13px; font-weight: 600; font-family: var(--th-font-display); color: var(--th-fg); margin-bottom: 2px; }
+    .invite-empty-desc { font-size: 12px; color: var(--th-fg-muted); line-height: 1.4; }
+    .invite-generate-btn {
+      flex-shrink: 0;
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 16px; font-size: 13px; font-weight: 600;
+      border-radius: var(--th-radius-sm);
+      border: 1px solid var(--th-primary);
+      background: var(--th-primary);
+      color: white;
+      cursor: pointer;
+      transition: background .12s, border-color .12s, transform .06s;
+      white-space: nowrap;
+    }
+    .invite-generate-btn:hover { background: var(--th-primary-hover); border-color: var(--th-primary-hover); }
+
+    /* ═══════════════════════════════════════════════════════════
+       PARTICIPANTS LIST
+    ══════════════════════════════════════════════════════════ */
+    .participant-list { display: flex; flex-direction: column; }
+    .participant-item {
+      display: flex; align-items: center; gap: 13px;
+      padding: 11px 18px;
+      border-bottom: 1px solid var(--th-border);
+      transition: background .1s;
+    }
+    .participant-item:last-child { border-bottom: none; }
+    .participant-item:hover { background: var(--th-bg); }
+    .participant-avatar {
+      width: 36px; height: 36px; border-radius: 999px;
+      display: grid; place-items: center;
+      font-weight: 700; font-size: 12px; color: white;
+      flex-shrink: 0;
+    }
+    .participant-info { flex: 1; min-width: 0; }
+    .participant-name { font-size: 13.5px; font-weight: 600; font-family: var(--th-font-display); color: var(--th-fg); letter-spacing: -0.01em; }
+    .participant-email { font-size: 12px; color: var(--th-fg-muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .participant-joined { font-size: 11px; color: var(--th-fg-subtle); white-space: nowrap; flex-shrink: 0; }
+
+    /* Disabled participants */
+    .participant-item.disabled { opacity: 0.55; }
+    .participant-item.disabled .participant-name { text-decoration: line-through; color: var(--th-fg-muted); }
+
+    .disabled-separator {
+      padding: 10px 18px 6px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .disabled-separator-text {
+      font-size: 11px; font-weight: 600; color: var(--th-fg-subtle);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    .disabled-separator-line {
+      flex: 1; height: 1px; background: var(--th-border);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       SIDE INFO CARD (stats)
+    ══════════════════════════════════════════════════════════ */
+    .side-stats-card { display: flex; flex-direction: column; }
+    .stat-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--th-border);
+    }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--th-fg-muted); }
+    .stat-value { font-size: 13px; font-weight: 700; font-family: var(--th-font-display); color: var(--th-fg); }
+
+    /* ═══════════════════════════════════════════════════════════
+       SHARE HINT
+    ══════════════════════════════════════════════════════════ */
+    .share-hint {
+      background: var(--th-info-soft);
+      border: 1px solid rgba(42, 111, 219, 0.15);
+      border-radius: var(--th-radius);
+      padding: 13px 16px;
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .share-hint-icon { flex-shrink: 0; color: var(--th-info); margin-top: 1px; }
+    .share-hint-text { font-size: 12px; color: var(--th-info); line-height: 1.45; }
+    .share-hint-text strong { font-weight: 600; }
+
+    /* Transitions */
+    .fade-in { animation: fadeIn .2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════ SCENARIO BAR ═══════════════════ -->
+<div class="scenario-bar">
+  <span class="label">US-004</span>
+  <button class="scenario-btn active" onclick="showScenario('active-link')" id="btn-active-link">1 — Link attivo</button>
+  <button class="scenario-btn" onclick="showScenario('no-link')" id="btn-no-link">2 — Nessun link</button>
+  <button class="scenario-btn" onclick="showScenario('copied')" id="btn-copied">3 — Link copiato</button>
+  <span class="scenario-desc">Combriccola — Partecipanti e Inviti</span>
+</div>
+
+<!-- ═══════════════════ APP SHELL ═══════════════════ -->
+<header class="th-header">
+  <div class="th-header-row">
+    <div class="th-header-brand">
+      <div class="th-brand-mark">C</div>
+      <span>Combriccola</span>
+    </div>
+    <nav class="th-header-nav">
+      <button class="th-header-nav-item active">I miei viaggi</button>
+      <button class="th-header-nav-item">Inviti</button>
+    </nav>
+    <div class="th-header-right">
+      <div class="th-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" placeholder="Cerca viaggio…" readonly/>
+      </div>
+      <div class="th-avatar" title="Marco Rossi">MR</div>
+    </div>
+  </div>
+</header>
+
+<main id="main-content"></main>
+
+<!-- ═══════════════════════════════════════════════════════
+     SHARED: Trip Hero + Nav (reused across all scenarios)
+══════════════════════════════════════════════════════════ -->
+
+<!-- ── Trip Hero Fragment ── -->
+<template id="tpl-trip-hero">
+  <div class="trip-hero th-card">
+    <div class="trip-hero-cover">
+      <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="tk-sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#F9C9D5"/>
+            <stop offset="1" stop-color="#E89AAB"/>
+          </linearGradient>
+        </defs>
+        <rect width="400" height="300" fill="url(#tk-sky)"/>
+        <circle cx="80" cy="80" r="36" fill="#E84A4A" opacity="0.85"/>
+        <polygon points="240,240 330,100 420,240" fill="#5B6E8E" opacity="0.7"/>
+        <polygon points="285,160 330,100 375,160 360,168 330,152 300,168" fill="#fff" opacity="0.85"/>
+        <g fill="#3A3346">
+          <rect x="0" y="195" width="40" height="105"/>
+          <rect x="40" y="172" width="32" height="128"/>
+          <rect x="72" y="188" width="26" height="112"/>
+          <rect x="98" y="150" width="48" height="150"/>
+          <rect x="146" y="182" width="30" height="118"/>
+          <rect x="176" y="160" width="40" height="140"/>
+        </g>
+        <g transform="translate(228 75)">
+          <polygon points="22,0 28,0 42,110 8,110" fill="#E84A4A"/>
+          <rect x="16" y="110" width="20" height="68" fill="#E84A4A"/>
+          <polygon points="16,178 36,178 45,225 7,225" fill="#E84A4A"/>
+        </g>
+        <circle cx="24" cy="168" r="12" fill="#F9A8B4" opacity="0.6"/>
+        <circle cx="44" cy="162" r="9" fill="#F9A8B4" opacity="0.5"/>
+        <circle cx="10" cy="175" r="8" fill="#F9A8B4" opacity="0.4"/>
+      </svg>
+    </div>
+    <div class="trip-hero-body">
+      <div class="trip-hero-breadcrumb">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
+        I miei viaggi
+      </div>
+      <h1 class="trip-hero-name">Tokyo 2026</h1>
+      <div class="trip-hero-meta">
+        <div class="trip-hero-meta-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>
+          Tokyo, Giappone
+        </div>
+        <div class="trip-hero-meta-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          15–28 ago 2026
+        </div>
+        <div class="trip-hero-meta-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><circle cx="17" cy="8" r="3"/><path d="M22 19a5 5 0 0 0-5-5"/></svg>
+          5 partecipanti
+        </div>
+      </div>
+      <div class="trip-hero-footer">
+        <span class="th-badge th-badge-info">In arrivo</span>
+        <span style="margin-left: 4px; font-size: 12px; color: var(--th-fg-muted);">Tra 101 giorni</span>
+        <div style="margin-left: auto; display: flex; gap: 8px;">
+          <button class="th-btn th-btn-outline th-btn-sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            Modifica
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- ── Trip Nav Fragment ── -->
+<template id="tpl-trip-nav">
+  <div class="trip-nav-wrapper">
+    <button class="trip-nav-item">Panoramica</button>
+    <button class="trip-nav-item">Itinerario</button>
+    <button class="trip-nav-item">Documenti</button>
+    <button class="trip-nav-item">Spese</button>
+    <button class="trip-nav-item active">Partecipanti</button>
+  </div>
+</template>
+
+<!-- ── Participants List Fragment ── -->
+<template id="tpl-participants">
+  <div class="th-card section-card" style="overflow:hidden;">
+    <div class="section-header">
+      <h2 class="section-title">Partecipanti</h2>
+      <span class="section-meta">4 attivi</span>
+    </div>
+    <div class="participant-list">
+
+      <!-- Marco (Organizzatore — current user) -->
+      <div class="participant-item">
+        <div class="participant-avatar" style="background: #D97757;">MR</div>
+        <div class="participant-info">
+          <div class="participant-name">Marco Rossi <span style="font-size:11px;color:var(--th-fg-subtle);font-weight:500;">(tu)</span></div>
+          <div class="participant-email">marco.rossi@gmail.com</div>
+        </div>
+        <span class="th-badge th-badge-primary">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Organizzatore
+        </span>
+        <span class="participant-joined">Fondatore</span>
+      </div>
+
+      <!-- Sara -->
+      <div class="participant-item">
+        <div class="participant-avatar" style="background: #6366F1;">SG</div>
+        <div class="participant-info">
+          <div class="participant-name">Sara Gennari</div>
+          <div class="participant-email">sara.gennari@outlook.com</div>
+        </div>
+        <span class="th-badge th-badge-success">Partecipante</span>
+        <span class="participant-joined">3 mag 2026</span>
+      </div>
+
+      <!-- Luca -->
+      <div class="participant-item">
+        <div class="participant-avatar" style="background: #0EA5E9;">LB</div>
+        <div class="participant-info">
+          <div class="participant-name">Luca Bianchi</div>
+          <div class="participant-email">luca.b@libero.it</div>
+        </div>
+        <span class="th-badge th-badge-success">Partecipante</span>
+        <span class="participant-joined">1 mag 2026</span>
+      </div>
+
+      <!-- Elena -->
+      <div class="participant-item">
+        <div class="participant-avatar" style="background: #EC4899;">EF</div>
+        <div class="participant-info">
+          <div class="participant-name">Elena Ferrari</div>
+          <div class="participant-email">elena.ferrari@gmail.com</div>
+        </div>
+        <span class="th-badge th-badge-success">Partecipante</span>
+        <span class="participant-joined">28 apr 2026</span>
+      </div>
+
+      <!-- Disabled separator -->
+      <div class="disabled-separator">
+        <span class="disabled-separator-text">Disattivati</span>
+        <div class="disabled-separator-line"></div>
+      </div>
+
+      <!-- Disabled participant -->
+      <div class="participant-item disabled">
+        <div class="participant-avatar" style="background: #A09C97;">GT</div>
+        <div class="participant-info">
+          <div class="participant-name">Giorgio Testa</div>
+          <div class="participant-email">g.testa@hotmail.it</div>
+        </div>
+        <span class="th-badge">Disattivato</span>
+        <span class="participant-joined">–</span>
+      </div>
+
+    </div>
+  </div>
+</template>
+
+<!-- ═══════════════════════════════════════════════════════
+     SCENARIO 1: Link attivo
+══════════════════════════════════════════════════════════ -->
+<template id="tpl-active-link">
+  <div class="th-page">
+
+    <!-- Hero + Nav injected by JS -->
+    <div id="hero-slot-1"></div>
+    <div id="nav-slot-1"></div>
+
+    <div class="participants-layout">
+
+      <!-- MAIN COLUMN -->
+      <div class="participants-main">
+
+        <!-- Invite Link Section — Active -->
+        <div class="invite-section">
+          <div class="invite-header">
+            <div class="invite-header-left">
+              <div class="invite-header-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              </div>
+              <div class="invite-header-text">
+                <div class="invite-title">Link di invito</div>
+                <div class="invite-subtitle">Solo gli organizzatori possono generare link</div>
+              </div>
+            </div>
+            <span class="th-badge th-badge-success">
+              <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3.5" fill="currentColor"/></svg>
+              Attivo
+            </span>
+          </div>
+
+          <div class="invite-body">
+            <div class="invite-link-row">
+              <div class="invite-link-input-wrap">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                <span class="invite-link-text">combriccola.app/invite/<span class="token-part">a7f3c2e1d9b04</span></span>
+              </div>
+              <button class="invite-copy-btn" id="copy-btn-1" onclick="triggerCopy('copy-btn-1')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copia
+              </button>
+            </div>
+
+            <div class="invite-expiry-row">
+              <div class="invite-expiry-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Scade il <strong style="color:var(--th-fg);margin-left:3px;">7 mag 2026 alle 14:32</strong>
+              </div>
+              <button class="invite-regen-btn" onclick="showRegenFeedback()">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+                Rigenera
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Participants list injected by JS -->
+        <div id="plist-slot-1"></div>
+
+      </div><!-- /.participants-main -->
+
+    </div><!-- /.participants-layout -->
+  </div>
+</template>
+
+<!-- ═══════════════════════════════════════════════════════
+     SCENARIO 2: Nessun link attivo
+══════════════════════════════════════════════════════════ -->
+<template id="tpl-no-link">
+  <div class="th-page">
+
+    <div id="hero-slot-2"></div>
+    <div id="nav-slot-2"></div>
+
+    <div class="participants-layout">
+
+      <!-- MAIN -->
+      <div class="participants-main">
+
+        <!-- Invite Link Section — Empty -->
+        <div class="invite-section">
+          <div class="invite-header">
+            <div class="invite-header-left">
+              <div class="invite-header-icon" style="background:var(--th-surface-2);color:var(--th-fg-muted);">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              </div>
+              <div class="invite-header-text">
+                <div class="invite-title">Link di invito</div>
+                <div class="invite-subtitle">Solo gli organizzatori possono generare link</div>
+              </div>
+            </div>
+            <span class="th-badge">
+              <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3.5" fill="currentColor"/></svg>
+              Nessun link
+            </span>
+          </div>
+
+          <div class="invite-empty-body">
+            <div class="invite-empty-inner">
+              <div class="invite-empty-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              </div>
+              <div class="invite-empty-text-wrap">
+                <div class="invite-empty-title">Nessun link di invito attivo</div>
+                <div class="invite-empty-desc">Genera un link per invitare i tuoi amici senza dover inserire ogni email.</div>
+              </div>
+              <button class="invite-generate-btn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Genera link di invito
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Participants -->
+        <div id="plist-slot-2"></div>
+
+      </div><!-- /.participants-main -->
+
+    </div>
+  </div>
+</template>
+
+<!-- ═══════════════════════════════════════════════════════
+     SCENARIO 3: Link copiato (feedback)
+══════════════════════════════════════════════════════════ -->
+<template id="tpl-copied">
+  <div class="th-page">
+
+    <div id="hero-slot-3"></div>
+    <div id="nav-slot-3"></div>
+
+    <div class="participants-layout">
+
+      <!-- MAIN -->
+      <div class="participants-main">
+
+        <!-- Invite Link Section — Copied state -->
+        <div class="invite-section">
+          <div class="invite-header">
+            <div class="invite-header-left">
+              <div class="invite-header-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              </div>
+              <div class="invite-header-text">
+                <div class="invite-title">Link di invito</div>
+                <div class="invite-subtitle">Solo gli organizzatori possono generare link</div>
+              </div>
+            </div>
+            <span class="th-badge th-badge-success">
+              <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3.5" fill="currentColor"/></svg>
+              Attivo
+            </span>
+          </div>
+
+          <div class="invite-body">
+            <div class="invite-link-row">
+              <div class="invite-link-input-wrap" style="border-color:rgba(47,138,95,0.3);background:var(--th-success-soft);">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--th-success);"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                <span class="invite-link-text">combriccola.app/invite/<span class="token-part">a7f3c2e1d9b04</span></span>
+              </div>
+              <button class="invite-copy-btn copied" disabled>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Copiato!
+              </button>
+            </div>
+
+            <div class="invite-expiry-row">
+              <div class="invite-expiry-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Scade il <strong style="color:var(--th-fg);margin-left:3px;">7 mag 2026 alle 14:32</strong>
+              </div>
+              <button class="invite-regen-btn">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+                Rigenera
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Participants -->
+        <div id="plist-slot-3"></div>
+
+      </div><!-- /.participants-main -->
+
+    </div>
+  </div>
+</template>
+
+<script>
+  /* ─── Helpers ─── */
+  function cloneTemplate(id) {
+    return document.importNode(document.getElementById(id).content, true);
+  }
+
+  function injectHeroNav(slot, navActiveClass) {
+    const heroSlot = document.getElementById(slot + '-hero');
+    const navSlot  = document.getElementById(slot + '-nav');
+    if (heroSlot) heroSlot.appendChild(cloneTemplate('tpl-trip-hero'));
+    if (navSlot)  {
+      navSlot.appendChild(cloneTemplate('tpl-trip-nav'));
+      // Set "Partecipanti" as active (already set in template)
+    }
+  }
+
+  function injectParticipants(slotId) {
+    const el = document.getElementById(slotId);
+    if (el) el.appendChild(cloneTemplate('tpl-participants'));
+  }
+
+  /* ─── Copy interaction ─── */
+  function triggerCopy(btnId) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.classList.add('copied');
+    btn.innerHTML = `
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Copiato!
+    `;
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = `
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copia
+      `;
+    }, 2200);
+  }
+
+  /* ─── Scenario switching ─── */
+  function showScenario(id) {
+    // Update buttons
+    document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + id).classList.add('active');
+
+    // Render scenario
+    const main = document.getElementById('main-content');
+    main.innerHTML = '';
+    const content = cloneTemplate('tpl-' + id);
+    main.appendChild(content);
+
+    // Inject shared fragments into named slots
+    const n = id === 'active-link' ? '1' : id === 'no-link' ? '2' : '3';
+    const heroSlot = document.getElementById('hero-slot-' + n);
+    const navSlot  = document.getElementById('nav-slot-' + n);
+    const plistSlot = document.getElementById('plist-slot-' + n);
+
+    if (heroSlot) heroSlot.appendChild(cloneTemplate('tpl-trip-hero'));
+    if (navSlot)  navSlot.appendChild(cloneTemplate('tpl-trip-nav'));
+    if (plistSlot) plistSlot.appendChild(cloneTemplate('tpl-participants'));
+
+    // Tab click interaction
+    main.querySelectorAll('.trip-nav-item').forEach(item => {
+      item.addEventListener('click', function () {
+        main.querySelectorAll('.trip-nav-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  }
+
+  /* ─── Regen feedback (inline) ─── */
+  function showRegenFeedback() {
+    const btn = document.querySelector('.invite-regen-btn');
+    if (!btn) return;
+    const orig = btn.innerHTML;
+    btn.innerHTML = `
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+      Rigenerato
+    `;
+    btn.style.color = 'var(--th-success)';
+    btn.style.borderColor = 'rgba(47,138,95,0.3)';
+    setTimeout(() => {
+      btn.innerHTML = orig;
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }, 2000);
+  }
+
+  // Initial render
+  showScenario('active-link');
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-# TravelHub — Product Requirements Document
+# Combriccola — Product Requirements Document
 
 **Author:** Archetipo
 **Date:** 2026-05-06
@@ -8,7 +8,7 @@
 
 ## Elevator Pitch
 
-> Per **gruppi di amici che viaggiano insieme (4-10 persone)**, che hanno il problema di **trovare le informazioni del viaggio sparse tra WhatsApp, email, PDF e Google Docs**, **TravelHub** è un **travel hub centralizzato** che **offre una visione d'insieme immediata di tutto il viaggio — itinerario, documenti, spese**. A differenza di **WhatsApp + Google Docs + Splitwise usati insieme**, il nostro prodotto **unifica tutto in un'unica interfaccia strutturata, pensata per chi non vuole fare nulla ma deve sapere tutto**.
+> Per **gruppi di amici che viaggiano insieme (4-10 persone)**, che hanno il problema di **trovare le informazioni del viaggio sparse tra WhatsApp, email, PDF e Google Docs**, **Combriccola** è un **travel hub centralizzato** che **offre una visione d'insieme immediata di tutto il viaggio — itinerario, documenti, spese**. A differenza di **WhatsApp + Google Docs + Splitwise usati insieme**, il nostro prodotto **unifica tutto in un'unica interfaccia strutturata, pensata per chi non vuole fare nulla ma deve sapere tutto**.
 
 ---
 
@@ -48,11 +48,11 @@ La **dashboard di sintesi travel-aware**: progettata per il partecipante passivo
 
 | Phase | Action | Thought | Emotion | Opportunity |
 |---|---|---|---|---|
-| Awareness | Cerca alternative a Notion per condividere info di viaggio | "Devo trovare qualcosa che usino anche gli altri, non solo io" | Frustrazione | Posizionare TravelHub come strumento per il gruppo, non per il singolo |
-| Consideration | Confronta TravelHub con Google Docs e Notion | "Finalmente una cosa pensata per i viaggi, non generica" | Curiosità | Demo della dashboard con dati precaricati |
+| Awareness | Cerca alternative a Notion per condividere info di viaggio | "Devo trovare qualcosa che usino anche gli altri, non solo io" | Frustrazione | Posizionare Combriccola come strumento per il gruppo, non per il singolo |
+| Consideration | Confronta Combriccola con Google Docs e Notion | "Finalmente una cosa pensata per i viaggi, non generica" | Curiosità | Demo della dashboard con dati precaricati |
 | First Use | Crea il primo viaggio, carica i documenti, invita il gruppo | "Semplice — ci ho messo 5 minuti" | Soddisfazione | Onboarding guidato con template viaggio |
 | Regular Use | Il gruppo consulta in autonomia, Marco smette di rispondere su WhatsApp | "Funziona — non mi chiedono più dove si dorme" | Sollievo | Notifiche di attività del gruppo per sentirsi meno solo |
-| Advocacy | Suggerisce TravelHub al prossimo viaggio con altri amici | "Lo uso per tutti i viaggi ormai" | Fidelizzazione | Funzione "duplica viaggio" e referral |
+| Advocacy | Suggerisce Combriccola al prossimo viaggio con altri amici | "Lo uso per tutti i viaggi ormai" | Fidelizzazione | Funzione "duplica viaggio" e referral |
 
 ---
 
@@ -80,7 +80,7 @@ La **dashboard di sintesi travel-aware**: progettata per il partecipante passivo
 
 | Phase | Action | Thought | Emotion | Opportunity |
 |---|---|---|---|---|
-| Awareness | Riceve un invito via email da Marco | "Cos'è TravelHub? Un'altra roba da installare?" | Scetticismo | Email di invito con preview immediata del viaggio, senza login obbligatorio per il primo accesso |
+| Awareness | Riceve un invito via email da Marco | "Cos'è Combriccola? Un'altra roba da installare?" | Scetticismo | Email di invito con preview immediata del viaggio, senza login obbligatorio per il primo accesso |
 | Consideration | Apre il link e vede la dashboard del viaggio | "Oh, c'è scritto tutto — il volo, l'hotel, quanto devo" | Piacevole sorpresa | Dashboard leggibile in 10 secondi, zero attrito |
 | First Use | Crea il profilo con Google in un click | "Ok, 30 secondi — fatto" | Sollievo | OAuth Google/GitHub — nessun form |
 | Regular Use | Apre l'app il giorno del volo per cercare l'indirizzo dell'hotel | "Lo trovo subito" | Fiducia | Ricerca rapida e sezione documenti in evidenza |
@@ -142,7 +142,7 @@ La **dashboard di sintesi travel-aware**: progettata per il partecipante passivo
 
 ### System Architecture
 
-Il progetto utilizza un boilerplate esistente con auth, database e UI già configurati. Ricostruire le fondamenta comporterebbe sprechi di tempo e introdurrebbe inconsistenze. L'architettura si basa su questo stack consolidato e lo estende con i moduli applicativi di TravelHub.
+Il progetto utilizza un boilerplate esistente con auth, database e UI già configurati. Ricostruire le fondamenta comporterebbe sprechi di tempo e introdurrebbe inconsistenze. L'architettura si basa su questo stack consolidato e lo estende con i moduli applicativi di Combriccola.
 
 **Architectural Pattern:** Modular Monolith con Next.js App Router
 

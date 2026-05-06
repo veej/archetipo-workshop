@@ -23,6 +23,30 @@ export function formatDateRange(start: Date, end: Date): string {
   return `${sd}–${ed} ${sm} ${sy}`;
 }
 
+export type BalanceVariant = "negative" | "positive" | "zero";
+
+export type BalanceDisplayInfo = {
+  formattedAmount: string;
+  variant: BalanceVariant;
+  label: string;
+};
+
+export function getBalanceDisplayInfo(balance: number): BalanceDisplayInfo {
+  const absStr = new Intl.NumberFormat("it-IT", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Math.abs(balance));
+  const currency = `${absStr} €`;
+
+  if (balance < 0) {
+    return { formattedAmount: `−${currency}`, variant: "negative", label: "Devi al gruppo" };
+  }
+  if (balance > 0) {
+    return { formattedAmount: `+${currency}`, variant: "positive", label: "Il gruppo ti deve" };
+  }
+  return { formattedAmount: "0,00 €", variant: "zero", label: "Nessun debito" };
+}
+
 export function getTripStatus(startDate: Date, endDate: Date): TripStatus {
   const today = new Date();
   today.setHours(0, 0, 0, 0);

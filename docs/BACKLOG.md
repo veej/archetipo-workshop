@@ -46,7 +46,7 @@
 
 #### US-001: Creazione viaggio
 
-**Epic:** EP-001 | **Priority:** HIGH | **Story Points:** 3 | **Status:** REVIEW
+**Epic:** EP-001 | **Priority:** HIGH | **Story Points:** 3 | **Status:** DONE
 
 **Story**
 Come Marco (Coordinatore),
@@ -88,7 +88,7 @@ After implementing this story, qualsiasi utente autenticato può vedere la lista
 
 #### US-003: Dashboard di sintesi del viaggio
 
-**Epic:** EP-001 | **Priority:** HIGH | **Story Points:** 5 | **Status:** PLANNED
+**Epic:** EP-001 | **Priority:** HIGH | **Story Points:** 5 | **Status:** REVIEW
 
 **Story**
 Come Sara (Partecipante),
@@ -114,24 +114,24 @@ After implementing this story, qualsiasi partecipante del viaggio può aprire la
 
 ---
 
-#### US-004: Invito partecipante via email
+#### US-004: Link di invito al viaggio
 
-**Epic:** EP-002 | **Priority:** HIGH | **Story Points:** 5
+**Epic:** EP-002 | **Priority:** HIGH | **Story Points:** 5 | **Status:** PLANNED
 
 **Story**
 Come Marco (Coordinatore),
-voglio invitare qualcuno al viaggio inserendo il suo indirizzo email,
-così che riceva un link di accesso senza che io debba condividere credenziali o aggiungere l'utente manualmente.
+voglio generare un link di invito al viaggio che posso copiare e condividere tramite qualsiasi canale (WhatsApp, email, ecc.),
+così che i miei amici possano unirsi senza che io debba gestire indirizzi email o aggiungere utenti manualmente.
 
 **Demonstrates**
-After implementing this story, un organizzatore può inserire un indirizzo email e l'invitato riceve un'email funzionale con link di accettazione via Resend.
+After implementing this story, un organizzatore può generare un link di invito multi-uso dalla pagina partecipanti, copiarlo e condividerlo. Chiunque riceva il link può unirsi al viaggio finché il link è valido (24 ore).
 
 **Acceptance Criteria**
-- [ ] Solo gli organizzatori del viaggio possono inviare inviti dal tab partecipanti del viaggio (`/trips/[id]/participants`)
-- [ ] Viene creato un record invito con token monouso e scadenza a 24 ore
-- [ ] L'invitato riceve un'email via Resend contenente il nome del viaggio e il link di accettazione
-- [ ] Invitare un indirizzo email già presente nel viaggio (come partecipante o con invito pendente) mostra un messaggio di errore specifico
-- [ ] Il tab partecipanti mostra gli inviti pendenti con stato "In attesa" distinto dai partecipanti attivi e da quelli disattivati
+- [ ] Solo gli organizzatori possono generare il link dal tab partecipanti (`/trips/[id]/participants`)
+- [ ] Il link è generato con token univoco e scade dopo 24 ore
+- [ ] Il link è mostrato in pagina con un pulsante "Copia" per condividerlo via qualsiasi canale
+- [ ] Se esiste già un link attivo (non scaduto), viene mostrato quello; l'organizzatore può rigenerarne uno nuovo
+- [ ] Il tab partecipanti mostra i partecipanti attivi con badge ruolo e quelli disattivati separatamente
 
 ---
 

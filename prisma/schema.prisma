@@ -8,28 +8,34 @@ datasource db {
 }
 
 model User {
-  id           String           @id @default(uuid())
-  supabaseId   String           @unique
-  email        String           @unique
-  name         String?
-  image        String?
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
-  trips        TripParticipant[]
+  id                String               @id @default(uuid())
+  supabaseId        String               @unique
+  email             String               @unique
+  name              String?
+  image             String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  trips             TripParticipant[]
+  uploadedDocuments Document[]           @relation("DocumentUploader")
+  paidExpenses      Expense[]            @relation("ExpensePayer")
+  expenseShares     ExpenseParticipant[] @relation("ExpenseParticipation")
 
   @@map("users")
 }
 
 model Trip {
-  id          String           @id @default(uuid())
-  name        String
-  startDate   DateTime
-  endDate     DateTime
-  destination String
-  coverKey    String?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  participants TripParticipant[]
+  id             String           @id @default(uuid())
+  name           String
+  startDate      DateTime
+  endDate        DateTime
+  destination    String
+  coverKey       String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  participants   TripParticipant[]
+  itineraryStops ItineraryStop[]
+  documents      Document[]
+  expenses       Expense[]
 
   @@map("trips")
 }
@@ -48,6 +54,61 @@ model TripParticipant {
   @@map("trip_participants")
 }
 
+model ItineraryStop {
+  id        String   @id @default(uuid())
+  tripId    String
+  name      String
+  date      DateTime
+  time      String?
+  address   String?
+  notes     String?
+  createdAt DateTime @default(now())
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@map("itinerary_stops")
+}
+
+model Document {
+  id         String           @id @default(uuid())
+  tripId     String
+  name       String
+  fileKey    String
+  category   DocumentCategory @default(OTHER)
+  uploadedBy String
+  createdAt  DateTime         @default(now())
+  trip       Trip             @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  uploader   User             @relation("DocumentUploader", fields: [uploadedBy], references: [id])
+
+  @@map("documents")
+}
+
+model Expense {
+  id           String               @id @default(uuid())
+  tripId       String
+  description  String
+  amount       Float
+  date         DateTime
+  paidById     String
+  createdAt    DateTime             @default(now())
+  trip         Trip                 @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  paidBy       User                 @relation("ExpensePayer", fields: [paidById], references: [id])
+  participants ExpenseParticipant[]
+
+  @@map("expenses")
+}
+
+model ExpenseParticipant {
+  id        String  @id @default(uuid())
+  expenseId String
+  userId    String
+  amount    Float
+  expense   Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  user      User    @relation("ExpenseParticipation", fields: [userId], references: [id])
+
+  @@unique([expenseId, userId])
+  @@map("expense_participants")
+}
+
 enum TripRole {
   ORGANIZER
   PARTICIPANT
@@ -56,4 +117,11 @@ enum TripRole {
 enum ParticipantStatus {
   ACTIVE
   DEACTIVATED
+}
+
+enum DocumentCategory {
+  FLIGHT
+  HOTEL
+  BOOKING
+  OTHER
 }

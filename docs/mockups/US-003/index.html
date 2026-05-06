@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>US-003 — Combriccola: Dashboard Viaggio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    /* ───────── Design Tokens ───────── */
+    :root {
+      --th-primary:       #E55A4E;
+      --th-primary-hover: #C94A40;
+      --th-primary-soft:  #FCE9E6;
+      --th-primary-fg:    #FFFFFF;
+
+      --th-bg:            #FAFAF7;
+      --th-surface:       #FFFFFF;
+      --th-surface-2:     #F6F4F0;
+      --th-fg:            #1B1A19;
+      --th-fg-muted:      #6E6A66;
+      --th-fg-subtle:     #A09C97;
+      --th-border:        #E8E4DE;
+      --th-border-strong: #D8D2C8;
+      --th-ring:          rgba(229, 90, 78, 0.35);
+
+      --th-success:       #2F8A5F;
+      --th-success-soft:  #E5F2EC;
+      --th-warning:       #B8761E;
+      --th-warning-soft:  #FBF1DD;
+      --th-danger:        #C44A40;
+      --th-danger-soft:   #FCE9E6;
+      --th-info:          #2A6FDB;
+      --th-info-soft:     #E4EDFB;
+
+      --th-radius-sm: 6px;
+      --th-radius:    10px;
+      --th-radius-md: 12px;
+      --th-radius-lg: 16px;
+
+      --th-shadow-xs: 0 1px 2px rgba(20,16,12,0.04);
+      --th-shadow-sm: 0 1px 3px rgba(20,16,12,0.06), 0 1px 2px rgba(20,16,12,0.04);
+      --th-shadow-md: 0 4px 14px rgba(20,16,12,0.08), 0 2px 4px rgba(20,16,12,0.04);
+      --th-shadow-lg: 0 12px 32px rgba(20,16,12,0.10), 0 4px 12px rgba(20,16,12,0.05);
+
+      --th-font-sans:    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --th-font-display: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    }
+
+    /* ───────── Base ───────── */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--th-bg); color: var(--th-fg); font-family: var(--th-font-sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    button { font-family: inherit; cursor: pointer; }
+    a { color: inherit; text-decoration: none; }
+    h1, h2, h3, h4 { font-family: var(--th-font-display); font-weight: 700; letter-spacing: -0.02em; margin: 0; color: var(--th-fg); }
+    p { margin: 0; }
+
+    /* ───────── Scenario bar ───────── */
+    .scenario-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      background: var(--th-fg);
+      padding: 10px 20px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .scenario-bar .label { color: rgba(255,255,255,0.6); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+    .scenario-btn { padding: 5px 14px; font-size: 12.5px; font-weight: 600; border-radius: 6px; border: 1.5px solid rgba(255,255,255,0.15); background: transparent; color: rgba(255,255,255,0.65); cursor: pointer; transition: all .12s; white-space: nowrap; }
+    .scenario-btn:hover { border-color: rgba(255,255,255,0.4); color: white; }
+    .scenario-btn.active { background: var(--th-primary); border-color: var(--th-primary); color: white; }
+    .scenario-desc { margin-left: auto; color: rgba(255,255,255,0.4); font-size: 11.5px; }
+    body { padding-top: 44px; }
+
+    /* ───────── App Header ───────── */
+    .th-header {
+      position: sticky; top: 44px; z-index: 40;
+      background: rgba(250,250,247,0.92);
+      backdrop-filter: blur(12px) saturate(150%);
+      border-bottom: 1px solid var(--th-border);
+    }
+    .th-header-row {
+      max-width: 1240px; margin: 0 auto;
+      padding: 14px 32px;
+      display: flex; align-items: center; gap: 24px;
+    }
+    .th-header-brand { display: flex; align-items: center; gap: 10px; font-family: var(--th-font-display); font-weight: 700; font-size: 17px; letter-spacing: -0.02em; }
+    .th-brand-mark { width: 30px; height: 30px; border-radius: 9px; background: var(--th-primary); color: white; display: grid; place-items: center; font-weight: 800; font-size: 14px; box-shadow: 0 6px 14px -4px rgba(229,90,78,0.55); }
+    .th-header-nav { display: flex; align-items: center; gap: 4px; margin-left: 8px; }
+    .th-header-nav-item { padding: 7px 12px; font-size: 13px; font-weight: 600; color: var(--th-fg-muted); border-radius: var(--th-radius-sm); border: none; background: transparent; cursor: pointer; transition: background .12s, color .12s; white-space: nowrap; }
+    .th-header-nav-item:hover { background: var(--th-surface-2); color: var(--th-fg); }
+    .th-header-nav-item.active { color: var(--th-fg); background: var(--th-surface-2); }
+    .th-header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .th-search { display: flex; align-items: center; gap: 8px; background: var(--th-surface); border: 1px solid var(--th-border); border-radius: var(--th-radius-sm); padding: 7px 11px; width: 240px; color: var(--th-fg-muted); }
+    .th-search input { border: none; outline: none; background: transparent; flex: 1; color: var(--th-fg); font-size: 13px; }
+    .th-search input::placeholder { color: var(--th-fg-subtle); }
+    .th-avatar { width: 32px; height: 32px; border-radius: 999px; display: grid; place-items: center; color: white; font-weight: 700; font-size: 11.5px; background: #D97757; }
+
+    /* ───────── Page Container ───────── */
+    .th-page { padding: 28px 32px 56px; max-width: 1240px; width: 100%; margin: 0 auto; }
+
+    /* ───────── Buttons ───────── */
+    .th-btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; border-radius: var(--th-radius-sm); border: 1px solid transparent; background: var(--th-surface); color: var(--th-fg); transition: background .12s, border-color .12s, color .12s, transform .06s; white-space: nowrap; }
+    .th-btn:active { transform: translateY(0.5px); }
+    .th-btn-primary { background: var(--th-primary); color: var(--th-primary-fg); }
+    .th-btn-primary:hover { background: var(--th-primary-hover); }
+    .th-btn-outline { border-color: var(--th-border-strong); }
+    .th-btn-outline:hover { background: var(--th-surface-2); }
+    .th-btn-ghost { background: transparent; color: var(--th-fg-muted); }
+    .th-btn-ghost:hover { background: var(--th-surface-2); color: var(--th-fg); }
+    .th-btn-icon { width: 30px; height: 30px; padding: 0; justify-content: center; background: var(--th-surface); border: 1px solid var(--th-border); border-radius: var(--th-radius-sm); color: var(--th-fg-muted); }
+    .th-btn-icon:hover { background: var(--th-surface-2); color: var(--th-fg); }
+    .th-btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 6px; }
+
+    /* ───────── Cards ───────── */
+    .th-card { background: var(--th-surface); border: 1px solid var(--th-border); border-radius: var(--th-radius); box-shadow: var(--th-shadow-xs); }
+
+    /* ───────── Badges ───────── */
+    .th-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; font-size: 11.5px; font-weight: 600; border-radius: 999px; background: var(--th-surface-2); color: var(--th-fg-muted); border: 1px solid var(--th-border); white-space: nowrap; flex-shrink: 0; }
+    .th-badge-primary { background: var(--th-primary-soft); color: var(--th-primary-hover); border-color: transparent; }
+    .th-badge-success { background: var(--th-success-soft); color: var(--th-success); border-color: transparent; }
+    .th-badge-warning { background: var(--th-warning-soft); color: var(--th-warning); border-color: transparent; }
+    .th-badge-info { background: var(--th-info-soft); color: var(--th-info); border-color: transparent; }
+    .th-badge-danger { background: var(--th-danger-soft); color: var(--th-danger); border-color: transparent; }
+
+    /* ═══════════════════════════════════════════════════════════
+       TRIP HERO
+    ══════════════════════════════════════════════════════════ */
+    .trip-hero {
+      display: flex;
+      overflow: hidden;
+      border-radius: var(--th-radius-lg);
+      min-height: 188px;
+    }
+    .trip-hero-cover {
+      width: 256px;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .trip-hero-cover svg { width: 100%; height: 100%; display: block; object-fit: cover; }
+    .trip-hero-body {
+      flex: 1;
+      padding: 20px 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      border-left: 1px solid var(--th-border);
+    }
+    .trip-hero-breadcrumb {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; color: var(--th-fg-muted); font-weight: 500;
+      margin-bottom: 4px;
+      cursor: pointer;
+      transition: color .12s;
+    }
+    .trip-hero-breadcrumb:hover { color: var(--th-fg); }
+    .trip-hero-name { font-size: 28px; line-height: 1.08; letter-spacing: -0.03em; }
+    .trip-hero-meta { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 6px; }
+    .trip-hero-meta-item { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--th-fg-muted); }
+    .trip-hero-footer {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: auto; padding-top: 14px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       TRIP NAVIGATION
+    ══════════════════════════════════════════════════════════ */
+    .trip-nav-wrapper {
+      margin: 16px 0 24px;
+      background: var(--th-surface);
+      border: 1px solid var(--th-border);
+      border-radius: var(--th-radius);
+      box-shadow: var(--th-shadow-xs);
+      display: flex;
+      align-items: stretch;
+      overflow: hidden;
+    }
+    .trip-nav-item {
+      padding: 11px 18px;
+      font-size: 13px; font-weight: 600;
+      color: var(--th-fg-muted);
+      border: none; background: transparent;
+      cursor: pointer;
+      position: relative;
+      transition: color .12s;
+      white-space: nowrap;
+    }
+    .trip-nav-item::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 14px; right: 14px;
+      height: 2px;
+      border-radius: 2px 2px 0 0;
+      background: transparent;
+      transition: background .12s;
+    }
+    .trip-nav-item:hover { color: var(--th-fg); }
+    .trip-nav-item:hover::after { background: var(--th-border-strong); }
+    .trip-nav-item.active { color: var(--th-primary-hover); }
+    .trip-nav-item.active::after { background: var(--th-primary); }
+
+    /* ═══════════════════════════════════════════════════════════
+       DASHBOARD LAYOUT
+    ══════════════════════════════════════════════════════════ */
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 18px;
+      align-items: start;
+    }
+    .dashboard-side { display: flex; flex-direction: column; gap: 18px; }
+
+    /* ═══════════════════════════════════════════════════════════
+       SECTION CARDS
+    ══════════════════════════════════════════════════════════ */
+    .section-card { display: flex; flex-direction: column; }
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px 12px;
+      border-bottom: 1px solid var(--th-border);
+    }
+    .section-title { font-size: 13.5px; font-family: var(--th-font-display); font-weight: 700; letter-spacing: -0.01em; }
+    .section-meta { font-size: 12px; color: var(--th-fg-muted); font-weight: 500; }
+    .section-body { padding: 16px 18px; flex: 1; }
+    .section-footer { padding: 10px 18px 14px; border-top: 1px solid var(--th-border); }
+    .section-link {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12.5px; font-weight: 600;
+      color: var(--th-primary);
+      transition: color .12s;
+    }
+    .section-link:hover { color: var(--th-primary-hover); }
+
+    /* ═══════════════════════════════════════════════════════════
+       OGGI — TIMELINE
+    ══════════════════════════════════════════════════════════ */
+    .stops-list { display: flex; flex-direction: column; }
+    .stop-item { display: flex; gap: 14px; }
+    .stop-item:not(:last-child) { padding-bottom: 22px; }
+    .stop-timeline {
+      display: flex; flex-direction: column; align-items: center;
+      flex-shrink: 0; width: 56px;
+      padding-top: 2px;
+    }
+    .stop-time-pill {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 4px 8px;
+      font-size: 11.5px; font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.01em;
+      border-radius: var(--th-radius-sm);
+      background: var(--th-surface-2);
+      color: var(--th-fg);
+      border: 1px solid var(--th-border);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .stop-connector { width: 1.5px; flex: 1; background: var(--th-border); margin-top: 7px; min-height: 28px; }
+    .stop-body { flex: 1; padding-top: 2px; }
+    .stop-name { font-weight: 600; font-size: 14px; font-family: var(--th-font-display); color: var(--th-fg); margin-bottom: 4px; }
+    .stop-address { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--th-fg-muted); }
+    .stop-note {
+      margin-top: 7px;
+      font-size: 12px; color: var(--th-fg-muted);
+      padding: 7px 10px;
+      background: var(--th-bg);
+      border-radius: 6px;
+      border-left: 2px solid var(--th-border-strong);
+      line-height: 1.45;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       DOCUMENTI RECENTI
+    ══════════════════════════════════════════════════════════ */
+    .docs-list { display: flex; flex-direction: column; gap: 8px; }
+    .doc-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 9px 11px;
+      border-radius: var(--th-radius);
+      border: 1px solid var(--th-border);
+      background: var(--th-bg);
+      transition: background .12s, border-color .12s;
+      cursor: pointer;
+    }
+    .doc-item:hover { background: var(--th-surface-2); border-color: var(--th-border-strong); }
+    .doc-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: grid; place-items: center; flex-shrink: 0;
+    }
+    .doc-icon-volo    { background: var(--th-primary-soft); color: var(--th-primary); }
+    .doc-icon-hotel   { background: var(--th-info-soft); color: var(--th-info); }
+    .doc-icon-booking { background: var(--th-warning-soft); color: var(--th-warning); }
+    .doc-icon-altro   { background: var(--th-surface-2); color: var(--th-fg-muted); }
+    .doc-body { flex: 1; min-width: 0; }
+    .doc-name { font-size: 12.5px; font-weight: 600; color: var(--th-fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 3px; }
+    .doc-meta { display: flex; align-items: center; gap: 6px; }
+    .doc-date { font-size: 11px; color: var(--th-fg-subtle); }
+
+    /* ═══════════════════════════════════════════════════════════
+       IL MIO SALDO
+    ══════════════════════════════════════════════════════════ */
+    .balance-display { text-align: center; padding: 10px 0 4px; }
+    .balance-amount {
+      font-family: var(--th-font-display);
+      font-size: 42px; font-weight: 800;
+      letter-spacing: -0.04em; line-height: 1;
+      margin-bottom: 5px;
+    }
+    .balance-amount.negative { color: var(--th-danger); }
+    .balance-amount.positive { color: var(--th-success); }
+    .balance-amount.zero     { color: var(--th-fg-muted); }
+    .balance-subtitle { font-size: 13px; color: var(--th-fg-muted); font-weight: 500; }
+    .balance-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 14px;
+      padding: 7px 14px;
+      border-radius: var(--th-radius);
+      font-size: 12.5px; font-weight: 600;
+    }
+    .balance-chip.negative { background: var(--th-danger-soft); color: var(--th-danger); }
+    .balance-chip.positive { background: var(--th-success-soft); color: var(--th-success); }
+    .balance-chip.zero     { background: var(--th-surface-2); color: var(--th-fg-muted); }
+
+    /* ═══════════════════════════════════════════════════════════
+       SECTION EMPTY STATES
+    ══════════════════════════════════════════════════════════ */
+    .section-empty {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 28px 16px; text-align: center;
+    }
+    .section-empty-icon { color: var(--th-fg-subtle); margin-bottom: 10px; }
+    .section-empty-title { font-size: 13px; font-weight: 600; font-family: var(--th-font-display); color: var(--th-fg); margin-bottom: 4px; }
+    .section-empty-text { font-size: 12px; color: var(--th-fg-muted); max-width: 210px; line-height: 1.45; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════ SCENARIO BAR ═══════════════════ -->
+<div class="scenario-bar">
+  <span class="label">US-003</span>
+  <button class="scenario-btn active" onclick="showScenario('with-data')" id="btn-with-data">1 — Dashboard completa</button>
+  <button class="scenario-btn" onclick="showScenario('empty')" id="btn-empty">2 — Sezioni vuote</button>
+  <span class="scenario-desc">Combriccola — Dashboard di Sintesi</span>
+</div>
+
+<!-- ═══════════════════ APP SHELL ═══════════════════ -->
+<header class="th-header">
+  <div class="th-header-row">
+    <div class="th-header-brand">
+      <div class="th-brand-mark">C</div>
+      <span>Combriccola</span>
+    </div>
+    <nav class="th-header-nav">
+      <button class="th-header-nav-item">I miei viaggi</button>
+      <button class="th-header-nav-item">Inviti</button>
+    </nav>
+    <div class="th-header-right">
+      <div class="th-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" placeholder="Cerca viaggio…" readonly/>
+      </div>
+      <div class="th-avatar" title="Sara Gennari">SG</div>
+    </div>
+  </div>
+</header>
+
+<main id="main-content"></main>
+
+<!-- ═══════════════════════════════════════════════════════
+     TEMPLATE 1: Dashboard completa
+══════════════════════════════════════════════════════════ -->
+<template id="tpl-with-data">
+  <div class="th-page">
+
+    <!-- ── Trip Hero ── -->
+    <div class="trip-hero th-card">
+      <!-- Cover illustration (Tokyo) -->
+      <div class="trip-hero-cover">
+        <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="tk-sky-h" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#F9C9D5"/>
+              <stop offset="1" stop-color="#E89AAB"/>
+            </linearGradient>
+          </defs>
+          <rect width="400" height="300" fill="url(#tk-sky-h)"/>
+          <!-- Sun -->
+          <circle cx="80" cy="80" r="36" fill="#E84A4A" opacity="0.85"/>
+          <!-- Mt Fuji -->
+          <polygon points="240,240 330,100 420,240" fill="#5B6E8E" opacity="0.7"/>
+          <polygon points="285,160 330,100 375,160 360,168 330,152 300,168" fill="#fff" opacity="0.85"/>
+          <!-- Buildings / skyline -->
+          <g fill="#3A3346">
+            <rect x="0" y="195" width="40" height="105"/>
+            <rect x="40" y="172" width="32" height="128"/>
+            <rect x="72" y="188" width="26" height="112"/>
+            <rect x="98" y="150" width="48" height="150"/>
+            <rect x="146" y="182" width="30" height="118"/>
+            <rect x="176" y="160" width="40" height="140"/>
+          </g>
+          <!-- Tokyo Tower -->
+          <g transform="translate(228 75)">
+            <polygon points="22,0 28,0 42,110 8,110" fill="#E84A4A"/>
+            <rect x="16" y="110" width="20" height="68" fill="#E84A4A"/>
+            <polygon points="16,178 36,178 45,225 7,225" fill="#E84A4A"/>
+          </g>
+          <!-- Cherry blossoms hint -->
+          <circle cx="24" cy="168" r="12" fill="#F9A8B4" opacity="0.6"/>
+          <circle cx="44" cy="162" r="9" fill="#F9A8B4" opacity="0.5"/>
+          <circle cx="10" cy="175" r="8" fill="#F9A8B4" opacity="0.4"/>
+        </svg>
+      </div>
+
+      <!-- Trip info -->
+      <div class="trip-hero-body">
+        <div class="trip-hero-breadcrumb">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
+          I miei viaggi
+        </div>
+
+        <h1 class="trip-hero-name">Tokyo 2026</h1>
+
+        <div class="trip-hero-meta">
+          <div class="trip-hero-meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>
+            Tokyo, Giappone
+          </div>
+          <div class="trip-hero-meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            15–28 ago 2026
+          </div>
+          <div class="trip-hero-meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><circle cx="17" cy="8" r="3"/><path d="M22 19a5 5 0 0 0-5-5"/></svg>
+            5 partecipanti
+          </div>
+        </div>
+
+        <div class="trip-hero-footer">
+          <span class="th-badge th-badge-info">In arrivo</span>
+          <span style="margin-left: 4px; font-size: 12px; color: var(--th-fg-muted);">Tra 101 giorni</span>
+          <div style="margin-left: auto; display: flex; gap: 8px;">
+            <button class="th-btn th-btn-outline th-btn-sm">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              Modifica
+            </button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /.trip-hero -->
+
+    <!-- ── Trip Navigation ── -->
+    <div class="trip-nav-wrapper">
+      <button class="trip-nav-item active">Panoramica</button>
+      <button class="trip-nav-item">Itinerario</button>
+      <button class="trip-nav-item">Documenti</button>
+      <button class="trip-nav-item">Spese</button>
+      <button class="trip-nav-item">Partecipanti</button>
+    </div>
+
+    <!-- ── Dashboard Sections ── -->
+    <div class="dashboard-layout">
+
+      <!-- ─ LEFT: Oggi ─ -->
+      <div>
+        <div class="th-card section-card">
+          <div class="section-header">
+            <h2 class="section-title">Oggi</h2>
+            <span class="section-meta">mer 6 mag 2026</span>
+          </div>
+          <div class="section-body">
+            <div class="stops-list">
+
+              <!-- Stop 1 -->
+              <div class="stop-item">
+                <div class="stop-timeline">
+                  <span class="stop-time-pill">09:00</span>
+                  <div class="stop-connector"></div>
+                </div>
+                <div class="stop-body">
+                  <div class="stop-name">Tsukiji Market</div>
+                  <div class="stop-address">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>
+                    Tsukiji, Chūō, Tokyo
+                  </div>
+                  <div class="stop-note">Mercato del pesce più grande del Giappone — arrivare presto per le aste del tonno.</div>
+                </div>
+              </div>
+
+              <!-- Stop 2 -->
+              <div class="stop-item">
+                <div class="stop-timeline">
+                  <span class="stop-time-pill">15:30</span>
+                </div>
+                <div class="stop-body">
+                  <div class="stop-name">teamLab Borderless</div>
+                  <div class="stop-address">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>
+                    6 Chome-1-16 Aomi, Kōtō, Tokyo
+                  </div>
+                  <div class="stop-note">Arte digitale immersiva. Biglietti già prenotati (vedi documenti).</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+          <div class="section-footer">
+            <a href="#" class="section-link">
+              Vedi itinerario completo
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─ RIGHT SIDEBAR ─ -->
+      <div class="dashboard-side">
+
+        <!-- Documenti recenti -->
+        <div class="th-card section-card">
+          <div class="section-header">
+            <h2 class="section-title">Documenti recenti</h2>
+            <span class="section-meta">3 file</span>
+          </div>
+          <div class="section-body">
+            <div class="docs-list">
+
+              <!-- Doc 1: Volo -->
+              <div class="doc-item">
+                <div class="doc-icon doc-icon-volo">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                </div>
+                <div class="doc-body">
+                  <div class="doc-name">Volo AZ785 - Tokyo.pdf</div>
+                  <div class="doc-meta">
+                    <span class="th-badge th-badge-primary">Volo</span>
+                    <span class="doc-date">3 mag 2026</span>
+                  </div>
+                </div>
+                <button class="th-btn-icon" title="Scarica">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                </button>
+              </div>
+
+              <!-- Doc 2: Hotel -->
+              <div class="doc-item">
+                <div class="doc-icon doc-icon-hotel">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <div class="doc-body">
+                  <div class="doc-name">Hotel Shinjuku.pdf</div>
+                  <div class="doc-meta">
+                    <span class="th-badge th-badge-info">Hotel</span>
+                    <span class="doc-date">2 mag 2026</span>
+                  </div>
+                </div>
+                <button class="th-btn-icon" title="Scarica">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                </button>
+              </div>
+
+              <!-- Doc 3: JR Pass -->
+              <div class="doc-item">
+                <div class="doc-icon doc-icon-booking">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+                </div>
+                <div class="doc-body">
+                  <div class="doc-name">JR Pass.pdf</div>
+                  <div class="doc-meta">
+                    <span class="th-badge th-badge-warning">Prenotazione</span>
+                    <span class="doc-date">1 mag 2026</span>
+                  </div>
+                </div>
+                <button class="th-btn-icon" title="Scarica">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                </button>
+              </div>
+
+            </div>
+          </div>
+          <div class="section-footer">
+            <a href="#" class="section-link">
+              Vedi tutti i documenti
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div><!-- /.documenti -->
+
+        <!-- Il mio saldo -->
+        <div class="th-card section-card">
+          <div class="section-header">
+            <h2 class="section-title">Il mio saldo</h2>
+            <span class="section-meta">5 spese</span>
+          </div>
+          <div class="section-body">
+            <div class="balance-display">
+              <div class="balance-amount negative">−24,50 €</div>
+              <div class="balance-subtitle">Saldo netto verso il gruppo</div>
+              <div class="balance-chip negative">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                Devi al gruppo
+              </div>
+            </div>
+          </div>
+          <div class="section-footer">
+            <a href="#" class="section-link">
+              Vedi riepilogo spese
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div><!-- /.saldo -->
+
+      </div><!-- /.dashboard-side -->
+    </div><!-- /.dashboard-layout -->
+
+  </div><!-- /.th-page -->
+</template>
+
+<!-- ═══════════════════════════════════════════════════════
+     TEMPLATE 2: Sezioni vuote
+══════════════════════════════════════════════════════════ -->
+<template id="tpl-empty">
+  <div class="th-page">
+
+    <!-- ── Trip Hero (same) ── -->
+    <div class="trip-hero th-card">
+      <div class="trip-hero-cover">
+        <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="tk-sky-e" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#F9C9D5"/>
+              <stop offset="1" stop-color="#E89AAB"/>
+            </linearGradient>
+          </defs>
+          <rect width="400" height="300" fill="url(#tk-sky-e)"/>
+          <circle cx="80" cy="80" r="36" fill="#E84A4A" opacity="0.85"/>
+          <polygon points="240,240 330,100 420,240" fill="#5B6E8E" opacity="0.7"/>
+          <polygon points="285,160 330,100 375,160 360,168 330,152 300,168" fill="#fff" opacity="0.85"/>
+          <g fill="#3A3346">
+            <rect x="0" y="195" width="40" height="105"/>
+            <rect x="40" y="172" width="32" height="128"/>
+            <rect x="72" y="188" width="26" height="112"/>
+            <rect x="98" y="150" width="48" height="150"/>
+            <rect x="146" y="182" width="30" height="118"/>
+            <rect x="176" y="160" width="40" height="140"/>
+          </g>
+          <g transform="translate(228 75)">
+            <polygon points="22,0 28,0 42,110 8,110" fill="#E84A4A"/>
+            <rect x="16" y="110" width="20" height="68" fill="#E84A4A"/>
+            <polygon points="16,178 36,178 45,225 7,225" fill="#E84A4A"/>
+          </g>
+          <circle cx="24" cy="168" r="12" fill="#F9A8B4" opacity="0.6"/>
+          <circle cx="44" cy="162" r="9" fill="#F9A8B4" opacity="0.5"/>
+        </svg>
+      </div>
+      <div class="trip-hero-body">
+        <div class="trip-hero-breadcrumb">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
+          I miei viaggi
+        </div>
+        <h1 class="trip-hero-name">Tokyo 2026</h1>
+        <div class="trip-hero-meta">
+          <div class="trip-hero-meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-12a8 8 0 0 0-16 0c0 5 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>
+            Tokyo, Giappone
+          </div>
+          <div class="trip-hero-meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            15–28 ago 2026
+          </div>
+          <div class="trip-hero-meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><circle cx="17" cy="8" r="3"/><path d="M22 19a5 5 0 0 0-5-5"/></svg>
+            5 partecipanti
+          </div>
+        </div>
+        <div class="trip-hero-footer">
+          <span class="th-badge th-badge-info">In arrivo</span>
+          <span style="margin-left: 4px; font-size: 12px; color: var(--th-fg-muted);">Tra 101 giorni</span>
+          <div style="margin-left: auto; display: flex; gap: 8px;">
+            <button class="th-btn th-btn-outline th-btn-sm">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              Modifica
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Trip Navigation ── -->
+    <div class="trip-nav-wrapper">
+      <button class="trip-nav-item active">Panoramica</button>
+      <button class="trip-nav-item">Itinerario</button>
+      <button class="trip-nav-item">Documenti</button>
+      <button class="trip-nav-item">Spese</button>
+      <button class="trip-nav-item">Partecipanti</button>
+    </div>
+
+    <!-- ── Dashboard Sections (empty) ── -->
+    <div class="dashboard-layout">
+
+      <!-- LEFT: Oggi (empty) -->
+      <div>
+        <div class="th-card section-card">
+          <div class="section-header">
+            <h2 class="section-title">Oggi</h2>
+            <span class="section-meta">mer 6 mag 2026</span>
+          </div>
+          <div class="section-body" style="padding-top: 8px; padding-bottom: 8px;">
+            <div class="section-empty">
+              <div class="section-empty-icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/>
+                  <path d="M16 2v4M8 2v4M3 10h18"/>
+                  <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+                </svg>
+              </div>
+              <div class="section-empty-title">Nessuna tappa per oggi</div>
+              <p class="section-empty-text">Non ci sono tappe programmate per oggi. Controlla l'itinerario completo.</p>
+            </div>
+          </div>
+          <div class="section-footer">
+            <a href="#" class="section-link">
+              Vedi itinerario completo
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT SIDEBAR -->
+      <div class="dashboard-side">
+
+        <!-- Documenti (empty) -->
+        <div class="th-card section-card">
+          <div class="section-header">
+            <h2 class="section-title">Documenti recenti</h2>
+          </div>
+          <div class="section-body" style="padding-top: 8px; padding-bottom: 8px;">
+            <div class="section-empty">
+              <div class="section-empty-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                  <polyline points="10 9 9 9 8 9"/>
+                </svg>
+              </div>
+              <div class="section-empty-title">Nessun documento</div>
+              <p class="section-empty-text">Nessun documento ancora. Caricali nella sezione documenti.</p>
+            </div>
+          </div>
+          <div class="section-footer">
+            <a href="#" class="section-link">
+              Vai ai documenti
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Saldo (zero) -->
+        <div class="th-card section-card">
+          <div class="section-header">
+            <h2 class="section-title">Il mio saldo</h2>
+          </div>
+          <div class="section-body">
+            <div class="balance-display">
+              <div class="balance-amount zero">0,00 €</div>
+              <div class="balance-subtitle">Nessuna spesa registrata</div>
+              <div class="balance-chip zero">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+                Nessun debito
+              </div>
+            </div>
+          </div>
+          <div class="section-footer">
+            <a href="#" class="section-link">
+              Vai alle spese
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+
+      </div><!-- /.dashboard-side -->
+    </div><!-- /.dashboard-layout -->
+
+  </div><!-- /.th-page -->
+</template>
+
+<script>
+  function showScenario(id) {
+    document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + id).classList.add('active');
+
+    const tpl = document.getElementById('tpl-' + id);
+    const content = document.importNode(tpl.content, true);
+    const main = document.getElementById('main-content');
+    main.innerHTML = '';
+    main.appendChild(content);
+
+    // Tab interaction
+    main.querySelectorAll('.trip-nav-item').forEach(item => {
+      item.addEventListener('click', function() {
+        main.querySelectorAll('.trip-nav-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  }
+
+  showScenario('with-data');
+</script>
+</body>
+</html>
